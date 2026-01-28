@@ -40,5 +40,7 @@ export interface UITreeNode {
     target?: string;
   };
 
+  props?: Record<string, any>;
+
   children?: UITreeNode[];
 }

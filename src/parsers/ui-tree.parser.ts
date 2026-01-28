@@ -17,6 +17,8 @@ interface FigmaNode {
   id: string;
   name?: string;
   type: string;
+  visible?: boolean;
+  opacity?: number;
   children?: FigmaNode[];
   characters?: string;
   layoutMode?: 'HORIZONTAL' | 'VERTICAL' | 'NONE';
@@ -56,12 +58,24 @@ export function generateUITree(figmaJson: any): UITreeNode {
 /**
  * Skip rule: Only process nodes that look like components
  * Pattern: name_componentTypeinCAPS
+ * NOTE: TEXT nodes are handled separately before this rule
  */
 function shouldSkipNode(figmaNode: any): boolean {
+  // TEXT nodes are never skipped (handled by TEXT rules)
+  if (figmaNode.type === 'TEXT') return false;
+  
   const name = figmaNode.name || '';
   
   // Check if name follows component pattern: name_componentTypeinCAPS
   const looksLikeComponent = /^[^_]+_([A-Z_]+)$/.test(name);
+  
+  // Also allow FRAMEs with single TEXT child (TEXT heuristic fallback)
+  if ((figmaNode.type === 'FRAME' || figmaNode.type === 'COMPONENT') && figmaNode.children) {
+    const children = figmaNode.children || [];
+    if (children.length === 1 && children[0].type === 'TEXT' && !name.includes('_')) {
+      return false; // Don't skip - will be handled by TEXT rule T3
+    }
+  }
   
   if (!looksLikeComponent) return true;
   if (figmaNode.type === 'DOCUMENT') return true;
@@ -96,8 +110,70 @@ function findTopLevelComponent(node: any): FigmaNode | null {
  * Implements semantic collapse rules based on componentType
  */
 export function parseFigmaNode(figmaNode: FigmaNode): UITreeNode {
+  // ============================================================================
+  // TEXT DETECTION RULES (MUST RUN FIRST - BEFORE ALL OTHER LOGIC)
+  // ============================================================================
+  
+  // RULE T1: Raw TEXT node
+  if (figmaNode.type === 'TEXT') {
+    return {
+      id: figmaNode.id,
+      componentType: 'TEXT',
+      componentName: 'Text',
+      role: figmaNode.name || '',
+      text: (figmaNode as any).characters || '',
+    };
+  }
+  
+  // RULE T2: TEXT wrapper frame (name ends with _TEXT)
+  if (figmaNode.type === 'FRAME' || figmaNode.type === 'COMPONENT') {
+    const name = figmaNode.name || '';
+    if (name.endsWith('_TEXT')) {
+      const children = figmaNode.children || [];
+      if (children.length === 1 && (children[0] as any).type === 'TEXT') {
+        const textChild = children[0] as any;
+        return {
+          id: figmaNode.id,
+          componentType: 'TEXT',
+          componentName: name.replace(/_TEXT$/, ''),
+          role: name,
+          text: textChild.characters || '',
+        };
+      }
+    }
+  }
+  
+  // RULE T3: TEXT heuristic fallback (FRAME with single TEXT child, no underscore in name)
+  if (figmaNode.type === 'FRAME' || figmaNode.type === 'COMPONENT') {
+    const name = figmaNode.name || '';
+    const children = figmaNode.children || [];
+    
+    if (children.length === 1 && (children[0] as any).type === 'TEXT' && !name.includes('_')) {
+      const textChild = children[0] as any;
+      return {
+        id: figmaNode.id,
+        componentType: 'TEXT',
+        componentName: 'Text',
+        role: name,
+        text: textChild.characters || '',
+      };
+    }
+  }
+  
+  // ============================================================================
+  // REGULAR PARSING (after TEXT rules)
+  // ============================================================================
+  
   // Step 1: Parse component name and type from name
-  const { componentName, componentType, role } = parseComponentName(figmaNode.name || '');
+  let { componentName, componentType, role } = parseComponentName(figmaNode.name || '');
+  
+  // Step 1.5: Override componentType based on Figma type field if name doesn't have suffix
+  // If Figma type is VECTOR, treat as ICON if not already classified
+  if (figmaNode.type === 'VECTOR' && componentType === 'UNKNOWN') {
+    componentType = 'ICON';
+    componentName = figmaNode.name || undefined;
+    role = figmaNode.name || '';
+  }
   
   // Step 2: Handle TOUCHABLE_CARD special case
   if (componentType === 'TOUCHABLE_CARD') {
@@ -255,11 +331,12 @@ function parseTouchableCard(
 /**
  * Step 3A: Parse TEXT node
  * Rules: No children, no action, no layout
+ * Text content is in the "name" field
  */
 function parseTextNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
-  // Extract text
-  if (figmaNode.characters) {
-    node.text = figmaNode.characters;
+  // Extract text from name field
+  if (figmaNode.name) {
+    node.text = figmaNode.name;
   }
   
   // Extract size from fontSize
@@ -280,52 +357,91 @@ function parseTextNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
 
 /**
  * Step 3B: Parse BUTTON node
- * Rules: No recursion, no nested TEXT, pull text from first TEXT descendant
+ * * Logic:
+ * 1. Layout: Extract auto-layout properties.
+ * 2. Variant: Determine visual style (regular, outline, ghost).
+ * 3. Text: Find the first text node for content and size.
+ * 4. Icons: Detect sibling nodes (icons) relative to text position.
+ * 5. State: Detect disabled state via opacity.
+ * 6. Collapse: Do not process children recursively; map them to props instead.
  */
 function parseButtonNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
-  // Extract layout
+  // 1. Extract Layout
   const layout = extractLayout(figmaNode);
   if (layout) {
     node.layout = layout;
   }
-  
-  // Extract variant
+
+  node.styleHints = node.styleHints || {};
+  node.props = node.props || {};
+
+  // 2. Extract Variant
   extractVariant(figmaNode, node);
-  
-  // Extract text from first TEXT descendant (do NOT create nested TEXT node)
+
+  // 3. Extract Content
   if (figmaNode.children) {
     const textChild = findFirstTextDescendant(figmaNode);
-    if (textChild?.characters) {
-      node.text = textChild.characters;
-    }
-  }
-  
-  // Extract size from TEXT child's fontSize
-  if (figmaNode.children) {
-    const textChild = findFirstTextDescendant(figmaNode);
-    if (textChild?.style?.fontSize) {
-      const fontSize = textChild.style.fontSize;
-      if (fontSize >= 12 && fontSize <= 14) {
-        node.styleHints = { ...node.styleHints, size: 'sm' };
-      } else if (fontSize >= 15 && fontSize <= 17) {
-        node.styleHints = { ...node.styleHints, size: 'md' };
-      } else if (fontSize >= 18) {
-        node.styleHints = { ...node.styleHints, size: 'lg' };
+
+    // -- Text Processing --
+    if (textChild) {
+      node.text = (textChild as any).characters || textChild.name;
+      
+      // Size Logic
+      if (textChild.style?.fontSize) {
+        const fontSize = textChild.style.fontSize;
+        if (fontSize <= 12) node.styleHints.size = 'sm';
+        else if (fontSize >= 13 && fontSize <= 16) node.styleHints.size = 'md';
+        else if (fontSize >= 17) node.styleHints.size = 'lg';
       }
     }
+
+    // -- Icon Processing (Reusing your standard logic) --
+    // Filter children using the centralized helper
+    const iconNodes = figmaNode.children.filter(child => 
+      child.visible !== false && 
+      child !== textChild && // Ensure we don't pick the text node
+      isFigmaNodeIcon(child) // <--- USES YOUR SHARED LOGIC
+    );
+
+    if (iconNodes.length > 0 && textChild) {
+      // We need coordinates to determine Left vs Right
+      // (Cast to any if your simplified interface is missing absoluteBoundingBox)
+      const textX = (textChild as any).absoluteBoundingBox?.x || 0;
+      
+      iconNodes.forEach(iconFigmaNode => {
+        const iconX = (iconFigmaNode as any).absoluteBoundingBox?.x || 0;
+        
+        // PARSE the icon using your standard parser to get the correct name/role
+        // We reuse your `parseComponentName` to get the clean name "Search" from "Search_ICON"
+        const { componentName } = parseComponentName(iconFigmaNode.name || '');
+        const cleanName = componentName || iconFigmaNode.name || 'Icon';
+
+        // Assign to Props
+        if (iconX < textX) {
+          node.props!.leftIcon = cleanName;
+        } else {
+          node.props!.rightIcon = cleanName;
+        }
+      });
+    }
   }
-  
-  // Add action
+
+  // 4. Disabled State
+  if (figmaNode.opacity !== undefined && figmaNode.opacity < 0.9) {
+    node.props.disabled = true;
+  }
+
   node.action = { type: 'press' };
   
-  // BUTTON nodes NEVER have children (semantic collapse rule)
   return node;
 }
+
 
 /**
  * Step 3C: Parse CARD node
  * Rules: Recurse only into VIEW, TEXT, SVG, BUTTON
  * Drop layout-only wrappers
+ * Extract TEXT type children into parent's text field
  */
 function parseCardNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   // Extract variant
@@ -337,11 +453,19 @@ function parseCardNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
     node.layout = { padding: layout.padding };
   }
   
+  // Extract TEXT type children into parent's text field
+  extractTextChildren(figmaNode, node);
+  
   // Recurse into children (but apply semantic collapse)
   if (figmaNode.children && figmaNode.children.length > 0) {
     const children: UITreeNode[] = [];
     
     for (const child of figmaNode.children) {
+      // Skip TEXT type children (already extracted)
+      if ((child as any).type === 'TEXT') {
+        continue;
+      }
+      
       const childName = child.name || '';
       const { componentType } = parseComponentName(childName);
       
@@ -381,13 +505,14 @@ function parseInputNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   }
   
   // Extract placeholder and label from TEXT children
+  // Text content is in the "name" field
   if (figmaNode.children) {
     const textNodes: Array<{ text: string; isLabel?: boolean }> = [];
     
     for (const child of figmaNode.children) {
       if ((child as any).type === 'TEXT') {
         const childName = (child as any).name || '';
-        const text = (child as any).characters || '';
+        const text = childName; // Text is in the name field
         
         if (childName.toLowerCase().includes('label')) {
           textNodes.push({ text, isLabel: true });
@@ -426,6 +551,7 @@ function parseIconNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
 /**
  * Step 3F: Parse layout container (VIEW, SCROLLABLE_VIEW, HEADER, TOPBAR)
  * Rules: Always recurse, no text/title/subtitle, no action
+ * Extract TEXT type children into parent's text field
  */
 function parseLayoutNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   // Extract layout
@@ -434,11 +560,19 @@ function parseLayoutNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
     node.layout = layout;
   }
   
+  // Extract TEXT type children into parent's text field
+  extractTextChildren(figmaNode, node);
+  
   // Recurse into children (apply semantic collapse)
   if (figmaNode.children && figmaNode.children.length > 0) {
     const children: UITreeNode[] = [];
     
     for (const child of figmaNode.children) {
+      // Skip TEXT type children (already extracted)
+      if ((child as any).type === 'TEXT') {
+        continue;
+      }
+      
       const parsedChild = parseFigmaNode(child as FigmaNode);
       
       // Drop layout-only VIEW nodes with 0 semantic children
@@ -528,20 +662,49 @@ function extractLayout(figmaNode: FigmaNode): UITreeNode['layout'] | undefined {
 }
 
 /**
- * Extract variant from strokes/fills presence
- * Rules: strokes present → outlined, fills present → filled, both → filled, neither → regular
+ * Helper: Determines button variant based on Fills/Strokes
  */
 function extractVariant(figmaNode: FigmaNode, node: UITreeNode): void {
-  const hasStrokes = Array.isArray(figmaNode.strokes) && figmaNode.strokes.length > 0;
-  const hasFills = Array.isArray(figmaNode.fills) && figmaNode.fills.length > 0;
-  
+  // Ensure styleHints exists
+  node.styleHints = node.styleHints || {};
+
+  // Check for visible strokes
+  // Cast to any because your interface has unknown[] for strokes/fills
+  const hasStrokes = Array.isArray(figmaNode.strokes) && 
+                     figmaNode.strokes.length > 0 && 
+                     figmaNode.strokes.some((s: any) => s.visible !== false);
+
+  // Check for visible solid fills
+  const hasFills = Array.isArray(figmaNode.fills) && 
+                   figmaNode.fills.length > 0 && 
+                   figmaNode.fills.some((f: any) => f.visible !== false && f.type === 'SOLID');
+
   if (hasStrokes && !hasFills) {
-    node.styleHints = { ...node.styleHints, variant: 'outlined' };
+    node.styleHints.variant = 'outline';
   } else if (hasFills) {
-    node.styleHints = { ...node.styleHints, variant: 'filled' };
+    node.styleHints.variant = 'regular'; // 'filled'
   } else {
-    node.styleHints = { ...node.styleHints, variant: 'regular' };
+    // No fill, No stroke = Ghost / Text variant
+    node.styleHints.variant = 'ghost';
   }
+}
+
+/**
+ * Shared Helper: Centralized logic for what counts as an "Icon"
+ * Matches your Step 1.5 and Case logic from the main parser.
+ */
+function isFigmaNodeIcon(node: FigmaNode): boolean {
+  // 1. Explicit Component Type (from name suffix)
+  const { componentType } = parseComponentName(node.name || '');
+  if (['ICON', 'SVG'].includes(componentType)) return true;
+
+  // 2. Heuristic: Component Instances that explicitly say "Icon"
+  if (node.type === 'INSTANCE' && node.name?.toLowerCase().includes('icon')) return true;
+
+  // 3. Heuristic: Raw VECTORS (matches your Step 1.5)
+  if (node.type === 'VECTOR') return true;
+
+  return false;
 }
 
 /**
@@ -576,10 +739,43 @@ function hasSemanticContent(node: UITreeNode): boolean {
 }
 
 /**
+ * Extract TEXT type children (Figma type === "TEXT") into parent's text field
+ * TEXT children should not be created as separate nodes
+ * Text content is in the "name" field of the TEXT element
+ */
+function extractTextChildren(figmaNode: FigmaNode, node: UITreeNode): void {
+  if (!figmaNode.children) return;
+  
+  // Find all direct TEXT type children
+  const textChildren = figmaNode.children.filter((child: any) => child.type === 'TEXT');
+  
+  if (textChildren.length > 0) {
+    // Use the first TEXT child's name as the text
+    const firstText = textChildren[0];
+    if (firstText.name) {
+      node.text = firstText.name;
+      
+      // Extract size from fontSize if available
+      if (firstText.style?.fontSize) {
+        const fontSize = firstText.style.fontSize;
+        if (fontSize >= 12 && fontSize <= 14) {
+          node.styleHints = { ...node.styleHints, size: 'sm' };
+        } else if (fontSize >= 15 && fontSize <= 17) {
+          node.styleHints = { ...node.styleHints, size: 'md' };
+        } else if (fontSize >= 18) {
+          node.styleHints = { ...node.styleHints, size: 'lg' };
+        }
+      }
+    }
+  }
+}
+
+/**
  * Helper: Find first TEXT descendant (for BUTTON text extraction)
+ * Text content is in the "name" field
  */
 function findFirstTextDescendant(figmaNode: FigmaNode): FigmaNode | null {
-  if (figmaNode.type === 'TEXT' && figmaNode.characters) {
+  if (figmaNode.type === 'TEXT' && figmaNode.name) {
     return figmaNode;
   }
   
@@ -595,12 +791,13 @@ function findFirstTextDescendant(figmaNode: FigmaNode): FigmaNode | null {
 
 /**
  * Helper: Collect TEXT descendants (for TOUCHABLE_CARD title/subtitle)
+ * Text content is in the "name" field
  */
 function collectTextDescendants(figmaNode: FigmaNode, texts: string[], limit: number = Infinity): void {
   if (texts.length >= limit) return;
   
-  if (figmaNode.type === 'TEXT' && figmaNode.characters) {
-    texts.push(figmaNode.characters);
+  if (figmaNode.type === 'TEXT' && figmaNode.name) {
+    texts.push(figmaNode.name);
     return;
   }
   
