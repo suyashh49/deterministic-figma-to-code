@@ -34,6 +34,19 @@ export interface UITreeNode {
     size?: 'sm' | 'md' | 'lg';
   };
 
+  // Extracted visual styles (colors, borders, etc.)
+  styles?: {
+    backgroundColor?: string;      // Hex color, e.g., "#FFFFFF" or "rgba(0,0,0,0.5)"
+    textColor?: string;            // Text fill color
+    borderColor?: string;          // Stroke color
+    borderWidth?: number;          // Stroke weight
+    borderRadius?: number;         // Corner radius
+    opacity?: number;              // Node opacity (0-1)
+    fontSize?: number;             // Text font size
+    fontWeight?: number;           // Text font weight
+    fontFamily?: string;           // Text font family
+  };
+
   // Interactivity intent
   action?: {
     type: 'press' | 'submit' | 'navigate';

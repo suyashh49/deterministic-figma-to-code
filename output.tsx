@@ -1,0 +1,95 @@
+import React from 'react';
+import { SafeAreaView, Text, View } from 'react-native';
+import { Button, Card, Checkbox, Chip, Dropdown, RadioGroup } from '../component_library_app/src/components';
+
+export default function GeneratedScreen() {
+  return (
+    <SafeAreaView style={{"flex":1,"backgroundColor":"#FFFFFF"}}>
+      <View style={{"gap":21}}>
+        <Button
+  text="Regular Button"
+  variant="regular"
+  size="sm"
+  onPress={() => {}}
+  buttonStyle={{"backgroundColor":"#0891B2"}}
+ />
+        <Button
+  text="Outline Button"
+  variant="outline"
+  size="sm"
+  onPress={() => {}}
+ />
+        <Button
+  text="Ghost Button"
+  variant="ghost"
+  size="sm"
+  onPress={() => {}}
+ />
+        <Button
+  text="Disabled Button"
+  variant="regular"
+  size="sm"
+  disabled
+  rightIcon="Icon"
+  onPress={() => {}}
+  buttonStyle={{"backgroundColor":"#0891B2"}}
+ />
+      </View>
+      <View
+  style={{"flexDirection":"row","gap":35,"alignItems":"center"}}
+>
+        <Chip
+  text="Selectable chip"
+  selected={false}
+  mode="flat"
+  icon="SelectedIcon"
+  onPress={() => {}}
+ />
+        <Chip text="Normal chip" selected={false} mode="flat" disabled />
+        <Chip text="Disabled" selected={false} mode="flat" disabled />
+      </View>
+      <View style={{"gap":27}}>
+        <RadioGroup
+  options={[{"label":"Label","value":"Radio1"}]}
+  onChange={(value) => {}}
+ />
+        <Checkbox checked onChange={(value) => {}} label="Label" />
+        <Checkbox checked={false} onChange={(value) => {}} label="Label" />
+        <Dropdown
+  data={[]}
+  onChange={(value) => {}}
+  placeholder="Select Option"
+ />
+      </View>
+      <View style={{"gap":20}}>
+        <Card
+  variant="outlined"
+  padding="md"
+  containerStyle={{"backgroundColor":"#FFFFFF"}}
+>
+          <Card variant="filled" padding="none">
+            <Text>Container_TEXT</Text>
+          </Card>
+        </Card>
+        <Card
+  variant="elevated"
+  padding="md"
+  containerStyle={{"backgroundColor":"#FFFFFF"}}
+>
+          <Card variant="filled" padding="none">
+            <Text>Container_TEXT</Text>
+          </Card>
+        </Card>
+        <Card
+  variant="outlined"
+  padding="md"
+  containerStyle={{"backgroundColor":"#D8F0FF"}}
+>
+          <Card variant="filled" padding="none">
+            <Text>Container_TEXT</Text>
+          </Card>
+        </Card>
+      </View>
+    </SafeAreaView>
+  );
+}

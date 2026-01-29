@@ -120,13 +120,19 @@ export function parseFigmaNode(figmaNode: FigmaNode): UITreeNode {
 
   // RULE T1: Raw TEXT node
   if (figmaNode.type === 'TEXT') {
-    return {
+    const textNode: UITreeNode = {
       id: figmaNode.id,
       componentType: 'TEXT',
       componentName: 'Text',
       role: figmaNode.name || '',
       text: (figmaNode as any).characters || '',
     };
+    // Extract text styles (color, font)
+    const styles = extractStyles(figmaNode);
+    if (styles) {
+      textNode.styles = styles;
+    }
+    return textNode;
   }
 
   // RULE T2: TEXT wrapper frame (name ends with _TEXT)
@@ -191,6 +197,12 @@ export function parseFigmaNode(figmaNode: FigmaNode): UITreeNode {
     componentName,
     role,
   };
+
+  // Step 3.5: Extract visual styles (colors, borders, etc.)
+  const styles = extractStyles(figmaNode);
+  if (styles) {
+    node.styles = styles;
+  }
 
   // Step 4: Extract layout (for layout containers)
   if (isLayoutContainer(componentType)) {
@@ -456,7 +468,7 @@ function parseChipNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   // ... (Layout & Variant logic same as before) ...
   const layout = extractLayout(figmaNode);
   if (layout) node.layout = layout;
-  
+
   node.styleHints = node.styleHints || {};
   node.props = node.props || {};
   node.styleHints.variant = 'flat';
@@ -466,11 +478,11 @@ function parseChipNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
     const textChild = findFirstTextDescendant(figmaNode);
     if (textChild) node.text = (textChild as any).characters || textChild.name;
 
-    const iconNodes = figmaNode.children.filter(child => 
+    const iconNodes = figmaNode.children.filter(child =>
       child.visible !== false && child !== textChild && isFigmaNodeIcon(child)
     );
 
-    const tickIcon = iconNodes.find(icon => 
+    const tickIcon = iconNodes.find(icon =>
       (icon.name || '').toLowerCase().match(/tick|check/)
     );
 
@@ -515,12 +527,12 @@ function isDisabled(node: FigmaNode): boolean {
   // 2. Check for Grey Fill (Visual disabled color)
   if (Array.isArray(node.fills)) {
     // Find the first visible solid fill
-    const solidFill = node.fills.find((f: any) => 
-      f.visible !== false && 
-      f.type === 'SOLID' && 
+    const solidFill = node.fills.find((f: any) =>
+      f.visible !== false &&
+      f.type === 'SOLID' &&
       f.color
     );
-    
+
     if (solidFill && isGrey((solidFill as any).color)) {
       return true;
     }
@@ -536,14 +548,14 @@ function isDisabled(node: FigmaNode): boolean {
  */
 function isGrey(color: { r: number; g: number; b: number } | undefined): boolean {
   if (!color) return false;
-  
+
   const { r, g, b } = color;
-  
+
   // Check if they are roughly equal (within a small tolerance like 0.02)
   // Figma colors are 0-1 floats.
-  return Math.abs(r - g) < 0.05 && 
-         Math.abs(g - b) < 0.05 && 
-         Math.abs(r - b) < 0.05;
+  return Math.abs(r - g) < 0.05 &&
+    Math.abs(g - b) < 0.05 &&
+    Math.abs(r - b) < 0.05;
 }
 
 /**
@@ -565,11 +577,11 @@ function parseCardNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   // 2. Extract Padding
   // We use the raw layout data to map to semantic padding sizes
   const layout = extractLayout(figmaNode);
-  
+
   if (layout && layout.padding) {
     // Determine the "dominant" padding value (prioritize top/all if object)
-    const p = typeof layout.padding === 'number' 
-      ? layout.padding 
+    const p = typeof layout.padding === 'number'
+      ? layout.padding
       : (layout.padding.top || 0);
 
     // Map to CardPadding enum
@@ -579,12 +591,12 @@ function parseCardNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
       node.props.padding = 'sm';
     } else if (p <= 20) {
       // Matches your 16.5px JSON
-      node.props.padding = 'md'; 
+      node.props.padding = 'md';
     } else {
       node.props.padding = 'lg';
     }
   } else {
-     node.props.padding = 'none';
+    node.props.padding = 'none';
   }
 
   // 3. Recursive Children Processing
@@ -595,14 +607,14 @@ function parseCardNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
     for (const child of figmaNode.children) {
       // Parse every child using the main parser (recurses back to parseFigmaNode)
       const parsedChild = parseFigmaNode(child as FigmaNode);
-      
+
       // Filter out empty/useless nodes (Layout containers with no semantic content)
       // This keeps the DOM tree clean: <Card><Text/></Card> instead of <Card><View><Text/></View></Card>
       if (parsedChild.componentType === 'VIEW' && !hasSemanticContent(parsedChild)) {
-         // If it's a useless wrapper, try to hoist its children (flattening)
-         if (parsedChild.children) {
-           children.push(...parsedChild.children);
-         }
+        // If it's a useless wrapper, try to hoist its children (flattening)
+        if (parsedChild.children) {
+          children.push(...parsedChild.children);
+        }
       } else {
         // Keep valid semantic nodes (Text, Buttons, Inputs, or nested Views with content)
         children.push(parsedChild);
@@ -624,19 +636,19 @@ function parseCardNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
 function extractCardVariant(figmaNode: FigmaNode, node: UITreeNode): void {
   // 1. Check for Shadow (Elevation)
   // You need to ensure 'effects' is in your FigmaNode interface
-  const hasShadow = Array.isArray(figmaNode.effects) && 
-                    figmaNode.effects.some((e: any) => e.visible !== false && e.type === 'DROP_SHADOW');
-  
+  const hasShadow = Array.isArray(figmaNode.effects) &&
+    figmaNode.effects.some((e: any) => e.visible !== false && e.type === 'DROP_SHADOW');
+
   if (hasShadow) {
     node.props!.variant = 'elevated';
     return;
   }
 
   // 2. Check for Stroke (Outlined)
-  const hasStroke = Array.isArray(figmaNode.strokes) && 
-                    figmaNode.strokes.length > 0 && 
-                    figmaNode.strokes.some((s: any) => s.visible !== false);
-  
+  const hasStroke = Array.isArray(figmaNode.strokes) &&
+    figmaNode.strokes.length > 0 &&
+    figmaNode.strokes.some((s: any) => s.visible !== false);
+
   if (hasStroke) {
     node.props!.variant = 'outlined';
     return;
@@ -1071,3 +1083,116 @@ function collectTextDescendants(figmaNode: FigmaNode, texts: string[], limit: nu
     }
   }
 }
+
+// ============================================================================
+// STYLE EXTRACTION UTILITIES
+// ============================================================================
+
+/**
+ * Convert Figma color (0-1 float) to hex or rgba string
+ */
+function figmaColorToHex(color: { r: number; g: number; b: number; a?: number }, opacity: number = 1): string {
+  if (!color) return 'transparent';
+
+  const to255 = (n: number) => Math.round(n * 255);
+  const finalAlpha = (color.a ?? 1) * opacity;
+
+  // If alpha is 0, return transparent
+  if (finalAlpha === 0) return 'transparent';
+
+  const r = to255(color.r);
+  const g = to255(color.g);
+  const b = to255(color.b);
+
+  // If alpha is less than 1, use rgba
+  if (finalAlpha < 1) {
+    return `rgba(${r}, ${g}, ${b}, ${finalAlpha.toFixed(2)})`;
+  }
+
+  // Otherwise, use hex
+  const toHex = (n: number) => n.toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+}
+
+/**
+ * Extract visual styles (colors, borders, etc.) from Figma node
+ */
+function extractStyles(figmaNode: FigmaNode): UITreeNode['styles'] | undefined {
+  const styles: UITreeNode['styles'] = {};
+  let hasStyles = false;
+
+  // 1. Extract background color from fills
+  if (Array.isArray(figmaNode.fills)) {
+    const solidFill = figmaNode.fills.find((f: any) =>
+      f.visible !== false && f.type === 'SOLID' && f.color
+    ) as any;
+
+    if (solidFill) {
+      const color = figmaColorToHex(solidFill.color, solidFill.opacity ?? 1);
+      if (color !== 'transparent') {
+        styles.backgroundColor = color;
+        hasStyles = true;
+      }
+    }
+  }
+
+  // 2. Extract border from strokes
+  if (Array.isArray(figmaNode.strokes)) {
+    const solidStroke = figmaNode.strokes.find((s: any) =>
+      s.visible !== false && s.type === 'SOLID' && s.color
+    ) as any;
+
+    if (solidStroke) {
+      styles.borderColor = figmaColorToHex(solidStroke.color, solidStroke.opacity ?? 1);
+      styles.borderWidth = (figmaNode as any).strokeWeight ?? 1;
+      hasStyles = true;
+    }
+  }
+
+  // 3. Extract corner radius
+  if (typeof (figmaNode as any).cornerRadius === 'number') {
+    styles.borderRadius = (figmaNode as any).cornerRadius;
+    hasStyles = true;
+  }
+
+  // 4. Extract opacity
+  if (typeof figmaNode.opacity === 'number' && figmaNode.opacity < 1) {
+    styles.opacity = figmaNode.opacity;
+    hasStyles = true;
+  }
+
+  // 5. Extract text styles (for TEXT nodes)
+  if (figmaNode.type === 'TEXT' || (figmaNode as any).characters) {
+    const style = figmaNode.style || (figmaNode as any).style;
+    if (style) {
+      if (style.fontSize) {
+        styles.fontSize = style.fontSize;
+        hasStyles = true;
+      }
+      if ((style as any).fontWeight) {
+        styles.fontWeight = (style as any).fontWeight;
+        hasStyles = true;
+      }
+      if ((style as any).fontFamily) {
+        styles.fontFamily = (style as any).fontFamily;
+        hasStyles = true;
+      }
+    }
+
+    // Text color from fills
+    if (Array.isArray(figmaNode.fills)) {
+      const textFill = figmaNode.fills.find((f: any) =>
+        f.visible !== false && f.type === 'SOLID' && f.color
+      ) as any;
+
+      if (textFill) {
+        styles.textColor = figmaColorToHex(textFill.color, textFill.opacity ?? 1);
+        hasStyles = true;
+      }
+    }
+  }
+
+  return hasStyles ? styles : undefined;
+}
+
+export { figmaColorToHex, extractStyles };

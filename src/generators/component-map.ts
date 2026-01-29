@@ -1,0 +1,361 @@
+/**
+ * Component Mapping: UITreeNode.componentType → Component Library Components
+ * 
+ * Maps semantic component types to React Native component library imports and prop transformers
+ */
+
+import { UITreeNode } from '../types/ui-tree';
+
+/**
+ * Mapping configuration for each component type
+ */
+export interface ComponentMapping {
+    /** Component name to import from component library */
+    component: string;
+
+    /** Function to transform UITreeNode props to component props */
+    propMapper: (node: UITreeNode) => Record<string, any>;
+
+    /** Whether this component should have children */
+    hasChildren?: boolean;
+
+    /** Additional imports required */
+    additionalImports?: string[];
+}
+
+/**
+ * Master component mapping from componentType → Component
+ */
+export const COMPONENT_MAP: Record<string, ComponentMapping> = {
+    // ============================================
+    // Button Variants
+    // ============================================
+    'BUTTON': {
+        component: 'Button',
+        propMapper: (node) => ({
+            text: node.text,
+            variant: mapButtonVariant(node.styleHints?.variant),
+            size: node.styleHints?.size || 'md',
+            disabled: node.props?.disabled,
+            leftIcon: node.props?.leftIcon,
+            rightIcon: node.props?.rightIcon,
+            onPress: '() => {}', // Placeholder
+            // Apply custom styles if not matching design system
+            ...(node.styles?.backgroundColor && {
+                buttonStyle: { backgroundColor: node.styles.backgroundColor },
+            }),
+        }),
+    },
+
+    // ============================================
+    // Cards
+    // ============================================
+    'CARD': {
+        component: 'Card',
+        hasChildren: true,
+        propMapper: (node) => ({
+            variant: mapCardVariant(node.props?.variant || node.styleHints?.variant),
+            padding: node.props?.padding || 'md',
+            onPress: node.action?.type === 'press' ? '() => {}' : undefined,
+            // Apply custom styles if needed
+            ...(node.styles?.backgroundColor && {
+                containerStyle: { backgroundColor: node.styles.backgroundColor },
+            }),
+        }),
+    },
+
+    'TOUCHABLE_CARD': {
+        component: 'Card',
+        hasChildren: true,
+        propMapper: (node) => ({
+            variant: mapCardVariant(node.props?.variant || 'elevated'),
+            padding: node.props?.padding || 'md',
+            onPress: '() => {}', // Always touchable
+        }),
+    },
+
+    // ============================================
+    // Chip
+    // ============================================
+    'CHIP': {
+        component: 'Chip',
+        propMapper: (node) => ({
+            text: node.text || '',
+            selected: node.props?.selected || false,
+            mode: node.styleHints?.variant === 'outline' ? 'outlined' : 'flat',
+            icon: node.props?.icon,
+            disabled: node.props?.disabled,
+            onPress: node.action?.type === 'press' ? '() => {}' : undefined,
+        }),
+    },
+
+    // ============================================
+    // Form Components
+    // ============================================
+    'CHECKBOX': {
+        component: 'Checkbox',
+        propMapper: (node) => ({
+            checked: node.props?.checked || false,
+            onChange: '(value) => {}',
+            label: node.props?.label || node.text,
+            disabled: node.props?.disabled,
+        }),
+    },
+
+    'RADIO': {
+        component: 'RadioGroup',
+        propMapper: (node) => ({
+            options: [{ label: node.props?.label || node.text || 'Option', value: node.componentName || 'option' }],
+            value: node.props?.selected ? (node.componentName || 'option') : undefined,
+            onChange: '(value) => {}',
+            disabled: node.props?.disabled,
+        }),
+    },
+
+    'DROPDOWN': {
+        component: 'Dropdown',
+        propMapper: (node) => ({
+            data: [], // Will be populated by parent
+            value: undefined,
+            onChange: '(value) => {}',
+            placeholder: node.text || node.props?.placeholder || 'Select Option',
+            label: node.title || node.props?.label,
+            disabled: node.props?.disabled,
+        }),
+    },
+
+    'INPUT': {
+        component: 'TextInput',
+        propMapper: (node) => ({
+            placeholder: node.text || 'Enter text',
+            label: node.title,
+            onChangeText: '(text) => {}',
+            disabled: node.props?.disabled,
+        }),
+    },
+
+    'SEARCHABLE_INPUT': {
+        component: 'SearchableInput',
+        propMapper: (node) => ({
+            value: '',
+            onChangeText: '(text) => {}',
+            placeholder: node.text || 'Search...',
+            disabled: node.props?.disabled,
+        }),
+    },
+
+    'SWITCH': {
+        component: 'Switch',
+        propMapper: (node) => ({
+            value: node.props?.checked || false,
+            onValueChange: '(value) => {}',
+            label: node.props?.label || node.text,
+            disabled: node.props?.disabled,
+        }),
+    },
+
+    // ============================================
+    // Text
+    // ============================================
+    'TEXT': {
+        component: 'Text',
+        additionalImports: ['Text'],
+        propMapper: (node) => ({
+            // Text component uses children, not text prop
+            _textContent: node.text || '',
+            // Style props from extracted styles
+            style: node.styles ? {
+                ...(node.styles.textColor && { color: node.styles.textColor }),
+                ...(node.styles.fontSize && { fontSize: node.styles.fontSize }),
+                ...(node.styles.fontWeight && { fontWeight: node.styles.fontWeight }),
+                ...(node.styles.fontFamily && { fontFamily: node.styles.fontFamily }),
+            } : undefined,
+        }),
+    },
+
+    // ============================================
+    // Layout Containers
+    // ============================================
+    'VIEW': {
+        component: 'View',
+        hasChildren: true,
+        additionalImports: ['View'],
+        propMapper: (node) => ({
+            style: buildLayoutStyle(node),
+        }),
+    },
+
+    'SCROLLABLE_VIEW': {
+        component: 'ScrollView',
+        hasChildren: true,
+        additionalImports: ['ScrollView'],
+        propMapper: (node) => ({
+            contentContainerStyle: buildLayoutStyle(node),
+        }),
+    },
+
+    'HEADER': {
+        component: 'Header',
+        propMapper: (node) => ({
+            title: node.text || node.title,
+            showBackButton: true,
+            onBackPress: '() => {}',
+        }),
+    },
+
+    'TOPBAR': {
+        component: 'Header',
+        propMapper: (node) => ({
+            title: node.text || node.title,
+        }),
+    },
+
+    'SAFEAREAVIEW': {
+        component: 'SafeAreaView',
+        hasChildren: true,
+        additionalImports: ['SafeAreaView'],
+        propMapper: (node) => ({
+            style: { flex: 1, ...buildLayoutStyle(node) },
+        }),
+    },
+
+    // ============================================
+    // Icons
+    // ============================================
+    'ICON': {
+        component: 'View',
+        additionalImports: ['View'],
+        propMapper: (node) => ({
+            style: {
+                width: 24,
+                height: 24,
+                backgroundColor: node.styles?.backgroundColor || '#E5E7EB',
+                borderRadius: node.styles?.borderRadius || 4,
+            },
+        }),
+    },
+
+    'SVG': {
+        component: 'View',
+        additionalImports: ['View'],
+        propMapper: (node) => ({
+            style: {
+                width: 24,
+                height: 24,
+                backgroundColor: '#E5E7EB',
+            },
+        }),
+    },
+};
+
+// ============================================
+// Helper Functions
+// ============================================
+
+/**
+ * Map UITreeNode variant to Button variant
+ */
+function mapButtonVariant(variant?: string): 'regular' | 'outline' | 'ghost' {
+    switch (variant) {
+        case 'outline':
+        case 'outlined':
+            return 'outline';
+        case 'ghost':
+        case 'text':
+            return 'ghost';
+        case 'regular':
+        case 'filled':
+        default:
+            return 'regular';
+    }
+}
+
+/**
+ * Map UITreeNode variant to Card variant
+ */
+function mapCardVariant(variant?: string): 'elevated' | 'outlined' | 'filled' {
+    switch (variant) {
+        case 'outline':
+        case 'outlined':
+            return 'outlined';
+        case 'filled':
+            return 'filled';
+        case 'elevated':
+        default:
+            return 'elevated';
+    }
+}
+
+/**
+ * Build style object from layout properties
+ */
+function buildLayoutStyle(node: UITreeNode): Record<string, any> | undefined {
+    const style: Record<string, any> = {};
+
+    // Layout direction
+    if (node.layout?.direction === 'horizontal') {
+        style.flexDirection = 'row';
+    }
+
+    // Gap
+    if (node.layout?.gap) {
+        style.gap = node.layout.gap;
+    }
+
+    // Padding
+    if (node.layout?.padding) {
+        if (typeof node.layout.padding === 'number') {
+            style.padding = node.layout.padding;
+        } else {
+            if (node.layout.padding.top) style.paddingTop = node.layout.padding.top;
+            if (node.layout.padding.right) style.paddingRight = node.layout.padding.right;
+            if (node.layout.padding.bottom) style.paddingBottom = node.layout.padding.bottom;
+            if (node.layout.padding.left) style.paddingLeft = node.layout.padding.left;
+        }
+    }
+
+    // Alignment
+    if (node.layout?.align) {
+        const alignMap: Record<string, string> = {
+            'start': 'flex-start',
+            'center': 'center',
+            'end': 'flex-end',
+            'stretch': 'stretch',
+        };
+        style.alignItems = alignMap[node.layout.align] || 'flex-start';
+    }
+
+    // Background color
+    if (node.styles?.backgroundColor) {
+        style.backgroundColor = node.styles.backgroundColor;
+    }
+
+    // Border
+    if (node.styles?.borderColor) {
+        style.borderColor = node.styles.borderColor;
+        style.borderWidth = node.styles.borderWidth || 1;
+    }
+
+    // Border radius
+    if (node.styles?.borderRadius) {
+        style.borderRadius = node.styles.borderRadius;
+    }
+
+    return Object.keys(style).length > 0 ? style : undefined;
+}
+
+/**
+ * Get mapping for a component type
+ */
+export function getComponentMapping(componentType: string): ComponentMapping | undefined {
+    return COMPONENT_MAP[componentType];
+}
+
+/**
+ * Check if a component type is supported
+ */
+export function isSupportedComponent(componentType: string): boolean {
+    return componentType in COMPONENT_MAP;
+}
+
+export { buildLayoutStyle, mapButtonVariant, mapCardVariant };
