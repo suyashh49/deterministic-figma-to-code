@@ -33,6 +33,10 @@ interface FigmaNode {
   };
   strokes?: unknown[];
   fills?: unknown[];
+  effects?: {
+    type: string;
+    visible?: boolean;
+  }[];
   [key: string]: unknown;
 }
 
@@ -209,6 +213,9 @@ export function parseFigmaNode(figmaNode: FigmaNode): UITreeNode {
 
     case 'BUTTON':
       return parseButtonNode(figmaNode, node);
+
+    case 'CHIP':
+      return parseChipNode(figmaNode, node);
 
     case 'CARD':
       return parseCardNode(figmaNode, node);
@@ -445,52 +452,160 @@ function parseButtonNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   return node;
 }
 
+function parseChipNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
+  // ... (Layout & Variant logic same as before) ...
+  const layout = extractLayout(figmaNode);
+  if (layout) node.layout = layout;
+  
+  node.styleHints = node.styleHints || {};
+  node.props = node.props || {};
+  node.styleHints.variant = 'flat';
+
+  // Extract Content (Text, Icons, Selected)
+  if (figmaNode.children) {
+    const textChild = findFirstTextDescendant(figmaNode);
+    if (textChild) node.text = (textChild as any).characters || textChild.name;
+
+    const iconNodes = figmaNode.children.filter(child => 
+      child.visible !== false && child !== textChild && isFigmaNodeIcon(child)
+    );
+
+    const tickIcon = iconNodes.find(icon => 
+      (icon.name || '').toLowerCase().match(/tick|check/)
+    );
+
+    if (tickIcon) node.props.selected = true;
+
+    const mainIcon = iconNodes.find(icon => icon !== tickIcon);
+    if (mainIcon) {
+      const { componentName } = parseComponentName(mainIcon.name || '');
+      node.props.icon = componentName || mainIcon.name || 'Icon';
+    }
+  }
+
+  // 4. Disabled State (✅ UPDATED)
+  // Now checks Opacity OR Grey Fill
+  if (isDisabled(figmaNode)) {
+    node.props.disabled = true;
+  }
+
+  // 5. Interaction
+  // Only add 'press' if has Icon/Selection AND not disabled
+  const hasIcon = !!node.props.icon || !!node.props.selected;
+  if (hasIcon && !node.props.disabled) {
+    node.action = { type: 'press' };
+  }
+
+  return node;
+}
+
+
+/**
+ * Helper: Visual-only disabled state detection
+ * Checks:
+ * 1. Opacity is significantly reduced (< 0.9)
+ * 2. Background fill is Grey
+ */
+function isDisabled(node: FigmaNode): boolean {
+  // 1. Check Opacity (Visual fade)
+  if (node.opacity !== undefined && node.opacity < 0.9) {
+    return true;
+  }
+
+  // 2. Check for Grey Fill (Visual disabled color)
+  if (Array.isArray(node.fills)) {
+    // Find the first visible solid fill
+    const solidFill = node.fills.find((f: any) => 
+      f.visible !== false && 
+      f.type === 'SOLID' && 
+      f.color
+    );
+    
+    if (solidFill && isGrey((solidFill as any).color)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Helper: Check if a color object is grey/grayscale
+ * Logic: R, G, and B are close to each other.
+ * Matches: #E0E0E0, #CCCCCC, #808080, etc.
+ */
+function isGrey(color: { r: number; g: number; b: number } | undefined): boolean {
+  if (!color) return false;
+  
+  const { r, g, b } = color;
+  
+  // Check if they are roughly equal (within a small tolerance like 0.02)
+  // Figma colors are 0-1 floats.
+  return Math.abs(r - g) < 0.05 && 
+         Math.abs(g - b) < 0.05 && 
+         Math.abs(r - b) < 0.05;
+}
 
 /**
  * Step 3C: Parse CARD node
- * Rules: Recurse only into VIEW, TEXT, SVG, BUTTON
- * Drop layout-only wrappers
- * Extract TEXT type children into parent's text field
+ * Logic:
+ * 1. Variant: Elevated (Shadow) > Outlined (Stroke) > Filled (Fill).
+ * 2. Padding: Map numeric padding to 'sm' | 'md' | 'lg' | 'none'.
+ * 3. Children: RECURSIVE (Cards are containers).
  */
 function parseCardNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
-  // Extract variant
-  extractVariant(figmaNode, node);
+  // Ensure containers exist
+  node.styleHints = node.styleHints || {};
+  node.props = node.props || {};
 
-  // Extract padding
+  // 1. Extract Variant
+  // Populates node.props.variant
+  extractCardVariant(figmaNode, node);
+
+  // 2. Extract Padding
+  // We use the raw layout data to map to semantic padding sizes
   const layout = extractLayout(figmaNode);
-  if (layout?.padding) {
-    node.layout = { padding: layout.padding };
+  
+  if (layout && layout.padding) {
+    // Determine the "dominant" padding value (prioritize top/all if object)
+    const p = typeof layout.padding === 'number' 
+      ? layout.padding 
+      : (layout.padding.top || 0);
+
+    // Map to CardPadding enum
+    if (p === 0) {
+      node.props.padding = 'none';
+    } else if (p <= 12) {
+      node.props.padding = 'sm';
+    } else if (p <= 20) {
+      // Matches your 16.5px JSON
+      node.props.padding = 'md'; 
+    } else {
+      node.props.padding = 'lg';
+    }
+  } else {
+     node.props.padding = 'none';
   }
 
-  // Extract TEXT type children into parent's text field
-  extractTextChildren(figmaNode, node);
-
-  // Recurse into children (but apply semantic collapse)
+  // 3. Recursive Children Processing
+  // Cards wrap content, so we MUST parse children.
   if (figmaNode.children && figmaNode.children.length > 0) {
     const children: UITreeNode[] = [];
 
     for (const child of figmaNode.children) {
-      // Skip TEXT type children (already extracted)
-      if ((child as any).type === 'TEXT') {
-        continue;
-      }
-
-      const childName = child.name || '';
-      const { componentType } = parseComponentName(childName);
-
-      // Only recurse into semantic children
-      if (isSemanticChild(componentType)) {
-        const parsedChild = parseFigmaNode(child as FigmaNode);
-
-        // Drop layout-only VIEW nodes with 0 semantic children
-        if (parsedChild.componentType === 'VIEW' && !hasSemanticContent(parsedChild)) {
-          // Skip this wrapper
-          if (parsedChild.children) {
-            children.push(...parsedChild.children);
-          }
-        } else {
-          children.push(parsedChild);
-        }
+      // Parse every child using the main parser (recurses back to parseFigmaNode)
+      const parsedChild = parseFigmaNode(child as FigmaNode);
+      
+      // Filter out empty/useless nodes (Layout containers with no semantic content)
+      // This keeps the DOM tree clean: <Card><Text/></Card> instead of <Card><View><Text/></View></Card>
+      if (parsedChild.componentType === 'VIEW' && !hasSemanticContent(parsedChild)) {
+         // If it's a useless wrapper, try to hoist its children (flattening)
+         if (parsedChild.children) {
+           children.push(...parsedChild.children);
+         }
+      } else {
+        // Keep valid semantic nodes (Text, Buttons, Inputs, or nested Views with content)
+        children.push(parsedChild);
       }
     }
 
@@ -500,6 +615,35 @@ function parseCardNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   }
 
   return node;
+}
+
+/**
+ * Helper: Card Variant Detection
+ * Hierarchy: Elevated (Shadow) > Outlined (Border) > Filled (Default)
+ */
+function extractCardVariant(figmaNode: FigmaNode, node: UITreeNode): void {
+  // 1. Check for Shadow (Elevation)
+  // You need to ensure 'effects' is in your FigmaNode interface
+  const hasShadow = Array.isArray(figmaNode.effects) && 
+                    figmaNode.effects.some((e: any) => e.visible !== false && e.type === 'DROP_SHADOW');
+  
+  if (hasShadow) {
+    node.props!.variant = 'elevated';
+    return;
+  }
+
+  // 2. Check for Stroke (Outlined)
+  const hasStroke = Array.isArray(figmaNode.strokes) && 
+                    figmaNode.strokes.length > 0 && 
+                    figmaNode.strokes.some((s: any) => s.visible !== false);
+  
+  if (hasStroke) {
+    node.props!.variant = 'outlined';
+    return;
+  }
+
+  // 3. Default to Filled
+  node.props!.variant = 'filled';
 }
 
 /**
@@ -830,14 +974,14 @@ function isFigmaNodeIcon(node: FigmaNode): boolean {
  * Helper: Check if component type is a layout container
  */
 function isLayoutContainer(componentType: string): boolean {
-  return ['VIEW', 'SCROLLABLE_VIEW', 'HEADER', 'TOPBAR', 'SAFEAREAVIEW', 'CARD', 'BUTTON', 'INPUT', 'SEARCHABLE_INPUT', 'DROPDOWN', 'CHECKBOX', 'RADIO'].includes(componentType);
+  return ['VIEW', 'SCROLLABLE_VIEW', 'HEADER', 'TOPBAR', 'SAFEAREAVIEW', 'CARD', 'BUTTON', 'INPUT', 'SEARCHABLE_INPUT', 'DROPDOWN', 'CHECKBOX', 'RADIO', 'CHIP'].includes(componentType);
 }
 
 /**
  * Helper: Check if component type is a semantic child (allowed in CARD)
  */
 function isSemanticChild(componentType: string): boolean {
-  return ['VIEW', 'TEXT', 'SVG', 'ICON', 'BUTTON', 'DROPDOWN', 'CHECKBOX', 'RADIO'].includes(componentType);
+  return ['VIEW', 'TEXT', 'SVG', 'ICON', 'BUTTON', 'DROPDOWN', 'CHECKBOX', 'RADIO', 'CHIP'].includes(componentType);
 }
 
 /**
