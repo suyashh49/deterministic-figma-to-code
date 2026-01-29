@@ -20,6 +20,14 @@ export interface UITreeNode {
   title?: string;     // for CARD-based list items
   subtitle?: string;  // for CARD-based list items
 
+  // Position bounds (for visual ordering/sorting)
+  bounds?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+
   // Layout intent
   layout?: {
     direction?: 'vertical' | 'horizontal';

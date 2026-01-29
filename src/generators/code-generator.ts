@@ -146,7 +146,7 @@ function generateImports(usedComponents: Set<string>, rnImports: Set<string>): s
     // Component library imports
     if (usedComponents.size > 0) {
         const componentList = Array.from(usedComponents).sort().join(', ');
-        imports.push(`import { ${componentList} } from '../component_library_app/src/components';`);
+        imports.push(`import { ${componentList} } from '../components';`);
     }
 
     return imports.join('\n');

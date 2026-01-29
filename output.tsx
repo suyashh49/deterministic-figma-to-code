@@ -1,6 +1,6 @@
 import React from 'react';
 import { SafeAreaView, Text, View } from 'react-native';
-import { Button, Card, Checkbox, Chip, Dropdown, RadioGroup } from '../component_library_app/src/components';
+import { Button, Card, Checkbox, Chip, Dropdown, RadioGroup } from '../components';
 
 export default function GeneratedScreen() {
   return (

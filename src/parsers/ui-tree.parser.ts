@@ -28,6 +28,12 @@ interface FigmaNode {
   paddingTop?: number;
   paddingBottom?: number;
   counterAxisAlignItems?: 'MIN' | 'CENTER' | 'MAX' | 'STRETCH';
+  absoluteBoundingBox?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
   style?: {
     fontSize?: number;
   };
@@ -197,6 +203,12 @@ export function parseFigmaNode(figmaNode: FigmaNode): UITreeNode {
     componentName,
     role,
   };
+
+  // Step 3.25: Extract bounds for visual position sorting
+  const bounds = extractBounds(figmaNode);
+  if (bounds) {
+    node.bounds = bounds;
+  }
 
   // Step 3.5: Extract visual styles (colors, borders, etc.)
   const styles = extractStyles(figmaNode);
@@ -604,7 +616,10 @@ function parseCardNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   if (figmaNode.children && figmaNode.children.length > 0) {
     const children: UITreeNode[] = [];
 
-    for (const child of figmaNode.children) {
+    // Sort children by visual position before processing
+    const sortedFigmaChildren = sortChildrenByPosition(figmaNode.children as FigmaNode[], figmaNode.layoutMode);
+
+    for (const child of sortedFigmaChildren) {
       // Parse every child using the main parser (recurses back to parseFigmaNode)
       const parsedChild = parseFigmaNode(child as FigmaNode);
 
@@ -842,7 +857,10 @@ function parseLayoutNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   if (figmaNode.children && figmaNode.children.length > 0) {
     const children: UITreeNode[] = [];
 
-    for (const child of figmaNode.children) {
+    // Sort children by visual position before processing
+    const sortedFigmaChildren = sortChildrenByPosition(figmaNode.children as FigmaNode[], figmaNode.layoutMode);
+
+    for (const child of sortedFigmaChildren) {
       // Skip TEXT type children (already extracted)
       if ((child as any).type === 'TEXT') {
         continue;
@@ -1195,4 +1213,54 @@ function extractStyles(figmaNode: FigmaNode): UITreeNode['styles'] | undefined {
   return hasStyles ? styles : undefined;
 }
 
-export { figmaColorToHex, extractStyles };
+/**
+ * Extract position bounds from Figma node
+ * Used for visual position-based sorting
+ */
+function extractBounds(figmaNode: FigmaNode): UITreeNode['bounds'] | undefined {
+  const box = figmaNode.absoluteBoundingBox;
+  if (!box) return undefined;
+
+  return {
+    x: box.x,
+    y: box.y,
+    width: box.width,
+    height: box.height,
+  };
+}
+
+/**
+ * Sort children by visual position (ported from figma-to-code-manual)
+ * - For horizontal layout: sort by X coordinate (left-to-right)
+ * - For vertical/none layout: sort by Y coordinate (top-to-bottom)
+ * - Uses 2px tolerance for items on the same line
+ */
+function sortChildrenByPosition(children: FigmaNode[], layoutMode?: 'HORIZONTAL' | 'VERTICAL' | 'NONE'): FigmaNode[] {
+  if (!children || children.length === 0) return [];
+
+  // Filter out invisible nodes
+  const visibleChildren = children.filter(c => c.visible !== false);
+
+  return visibleChildren.sort((a, b) => {
+    const aBox = a.absoluteBoundingBox;
+    const bBox = b.absoluteBoundingBox;
+
+    // If either node lacks bounds, maintain original order
+    if (!aBox || !bBox) return 0;
+
+    // If layout is horizontal, sort by X (left to right)
+    if (layoutMode === 'HORIZONTAL') {
+      return aBox.x - bBox.x;
+    }
+
+    // Default Vertical/None: Sort by Y (top to bottom)
+    // Allow 2px tolerance for items roughly on the same line
+    const yDiff = aBox.y - bBox.y;
+    if (Math.abs(yDiff) < 2) {
+      return aBox.x - bBox.x;
+    }
+    return yDiff;
+  });
+}
+
+export { figmaColorToHex, extractStyles, extractBounds, sortChildrenByPosition };
