@@ -4,6 +4,6 @@ dist/
 output.json
 .env
 .DS_Store
-
+input.json
 
 

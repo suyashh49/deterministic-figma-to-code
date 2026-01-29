@@ -43,14 +43,14 @@ interface FigmaNode {
 export function generateUITree(figmaJson: any): UITreeNode {
   // Find the document root
   const document = figmaJson.document || figmaJson;
-  
+
   // Find the first top-level component (using skip rule)
   const topFrame = findTopLevelComponent(document);
-  
+
   if (!topFrame) {
     throw new Error('No top-level component found in Figma JSON');
   }
-  
+
   // Parse the root frame - no special handling needed
   return parseFigmaNode(topFrame);
 }
@@ -63,12 +63,12 @@ export function generateUITree(figmaJson: any): UITreeNode {
 function shouldSkipNode(figmaNode: any): boolean {
   // TEXT nodes are never skipped (handled by TEXT rules)
   if (figmaNode.type === 'TEXT') return false;
-  
+
   const name = figmaNode.name || '';
-  
+
   // Check if name follows component pattern: name_componentTypeinCAPS
   const looksLikeComponent = /^[^_]+_([A-Z_]+)$/.test(name);
-  
+
   // Also allow FRAMEs with single TEXT child (TEXT heuristic fallback)
   if ((figmaNode.type === 'FRAME' || figmaNode.type === 'COMPONENT') && figmaNode.children) {
     const children = figmaNode.children || [];
@@ -76,12 +76,12 @@ function shouldSkipNode(figmaNode: any): boolean {
       return false; // Don't skip - will be handled by TEXT rule T3
     }
   }
-  
+
   if (!looksLikeComponent) return true;
   if (figmaNode.type === 'DOCUMENT') return true;
   if (figmaNode.type === 'CANVAS') return true;
   if (figmaNode.type === 'PAGE') return true;
-  
+
   return false;
 }
 
@@ -100,7 +100,7 @@ function findTopLevelComponent(node: any): FigmaNode | null {
     }
     return null;
   }
-  
+
   // This is a component node
   return node as FigmaNode;
 }
@@ -113,7 +113,7 @@ export function parseFigmaNode(figmaNode: FigmaNode): UITreeNode {
   // ============================================================================
   // TEXT DETECTION RULES (MUST RUN FIRST - BEFORE ALL OTHER LOGIC)
   // ============================================================================
-  
+
   // RULE T1: Raw TEXT node
   if (figmaNode.type === 'TEXT') {
     return {
@@ -124,7 +124,7 @@ export function parseFigmaNode(figmaNode: FigmaNode): UITreeNode {
       text: (figmaNode as any).characters || '',
     };
   }
-  
+
   // RULE T2: TEXT wrapper frame (name ends with _TEXT)
   if (figmaNode.type === 'FRAME' || figmaNode.type === 'COMPONENT') {
     const name = figmaNode.name || '';
@@ -142,12 +142,12 @@ export function parseFigmaNode(figmaNode: FigmaNode): UITreeNode {
       }
     }
   }
-  
+
   // RULE T3: TEXT heuristic fallback (FRAME with single TEXT child, no underscore in name)
   if (figmaNode.type === 'FRAME' || figmaNode.type === 'COMPONENT') {
     const name = figmaNode.name || '';
     const children = figmaNode.children || [];
-    
+
     if (children.length === 1 && (children[0] as any).type === 'TEXT' && !name.includes('_')) {
       const textChild = children[0] as any;
       return {
@@ -159,14 +159,14 @@ export function parseFigmaNode(figmaNode: FigmaNode): UITreeNode {
       };
     }
   }
-  
+
   // ============================================================================
   // REGULAR PARSING (after TEXT rules)
   // ============================================================================
-  
+
   // Step 1: Parse component name and type from name
   let { componentName, componentType, role } = parseComponentName(figmaNode.name || '');
-  
+
   // Step 1.5: Override componentType based on Figma type field if name doesn't have suffix
   // If Figma type is VECTOR, treat as ICON if not already classified
   if (figmaNode.type === 'VECTOR' && componentType === 'UNKNOWN') {
@@ -174,12 +174,12 @@ export function parseFigmaNode(figmaNode: FigmaNode): UITreeNode {
     componentName = figmaNode.name || undefined;
     role = figmaNode.name || '';
   }
-  
+
   // Step 2: Handle TOUCHABLE_CARD special case
   if (componentType === 'TOUCHABLE_CARD') {
     return parseTouchableCard(figmaNode, componentName, role);
   }
-  
+
   // Step 3: Create base node
   const node: UITreeNode = {
     id: figmaNode.id,
@@ -187,7 +187,7 @@ export function parseFigmaNode(figmaNode: FigmaNode): UITreeNode {
     componentName,
     role,
   };
-  
+
   // Step 4: Extract layout (for layout containers)
   if (isLayoutContainer(componentType)) {
     const layout = extractLayout(figmaNode);
@@ -201,33 +201,42 @@ export function parseFigmaNode(figmaNode: FigmaNode): UITreeNode {
       node.layout = layout;
     }
   }
-  
+
   // Step 5: Component-type-specific extraction
   switch (componentType) {
     case 'TEXT':
       return parseTextNode(figmaNode, node);
-    
+
     case 'BUTTON':
       return parseButtonNode(figmaNode, node);
-    
+
     case 'CARD':
       return parseCardNode(figmaNode, node);
-    
+
     case 'INPUT':
     case 'SEARCHABLE_INPUT':
       return parseInputNode(figmaNode, node);
-    
+
     case 'SVG':
     case 'ICON':
       return parseIconNode(figmaNode, node);
-    
+
+    case 'DROPDOWN':
+      return parseDropdownNode(figmaNode, node);
+
+    case 'CHECKBOX':
+      return parseCheckboxNode(figmaNode, node);
+
+    case 'RADIO':
+      return parseRadioNode(figmaNode, node);
+
     case 'VIEW':
     case 'SCROLLABLE_VIEW':
     case 'HEADER':
     case 'TOPBAR':
     case 'SAFEAREAVIEW':
       return parseLayoutNode(figmaNode, node);
-    
+
     default:
       // For unknown types, treat as layout container if it has layoutMode
       if (figmaNode.layoutMode) {
@@ -252,7 +261,7 @@ function parseComponentName(fullName: string): {
   role: string;
 } {
   const firstUnderscore = fullName.indexOf('_');
-  
+
   if (firstUnderscore === -1) {
     // No underscore → componentType = "UNKNOWN"
     return {
@@ -261,13 +270,13 @@ function parseComponentName(fullName: string): {
       role: fullName,
     };
   }
-  
+
   // Everything after the first underscore should be the component type (all caps)
   const componentType = fullName.slice(firstUnderscore + 1).trim();
-  
+
   // Verify that component type is all caps (allowing underscores)
   const isAllCaps = /^[A-Z_]+$/.test(componentType);
-  
+
   if (!isAllCaps) {
     // If not all caps, treat as UNKNOWN
     return {
@@ -276,9 +285,9 @@ function parseComponentName(fullName: string): {
       role: fullName,
     };
   }
-  
+
   const componentName = fullName.slice(0, firstUnderscore).trim();
-  
+
   return {
     componentName: componentName || undefined,
     componentType,
@@ -303,27 +312,27 @@ function parseTouchableCard(
     role,
     action: { type: 'press' },
   };
-  
+
   // Extract variant from strokes/fills
   extractVariant(figmaNode, node);
-  
+
   // Extract padding
   const layout = extractLayout(figmaNode);
   if (layout?.padding) {
     node.layout = { padding: layout.padding };
   }
-  
+
   // Extract title and subtitle from first two TEXT descendants
   const textNodes: string[] = [];
   collectTextDescendants(figmaNode, textNodes, 2); // Limit to 2
-  
+
   if (textNodes.length >= 1) {
     node.title = textNodes[0];
   }
   if (textNodes.length >= 2) {
     node.subtitle = textNodes[1];
   }
-  
+
   // DO NOT recurse into children (semantic collapse)
   return node;
 }
@@ -338,7 +347,7 @@ function parseTextNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   if (figmaNode.name) {
     node.text = figmaNode.name;
   }
-  
+
   // Extract size from fontSize
   if (figmaNode.style?.fontSize) {
     const fontSize = figmaNode.style.fontSize;
@@ -350,7 +359,7 @@ function parseTextNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
       node.styleHints = { size: 'lg' };
     }
   }
-  
+
   // TEXT nodes NEVER have children (semantic collapse rule)
   return node;
 }
@@ -385,7 +394,7 @@ function parseButtonNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
     // -- Text Processing --
     if (textChild) {
       node.text = (textChild as any).characters || textChild.name;
-      
+
       // Size Logic
       if (textChild.style?.fontSize) {
         const fontSize = textChild.style.fontSize;
@@ -397,8 +406,8 @@ function parseButtonNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
 
     // -- Icon Processing (Reusing your standard logic) --
     // Filter children using the centralized helper
-    const iconNodes = figmaNode.children.filter(child => 
-      child.visible !== false && 
+    const iconNodes = figmaNode.children.filter(child =>
+      child.visible !== false &&
       child !== textChild && // Ensure we don't pick the text node
       isFigmaNodeIcon(child) // <--- USES YOUR SHARED LOGIC
     );
@@ -407,10 +416,10 @@ function parseButtonNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
       // We need coordinates to determine Left vs Right
       // (Cast to any if your simplified interface is missing absoluteBoundingBox)
       const textX = (textChild as any).absoluteBoundingBox?.x || 0;
-      
+
       iconNodes.forEach(iconFigmaNode => {
         const iconX = (iconFigmaNode as any).absoluteBoundingBox?.x || 0;
-        
+
         // PARSE the icon using your standard parser to get the correct name/role
         // We reuse your `parseComponentName` to get the clean name "Search" from "Search_ICON"
         const { componentName } = parseComponentName(iconFigmaNode.name || '');
@@ -432,7 +441,7 @@ function parseButtonNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   }
 
   node.action = { type: 'press' };
-  
+
   return node;
 }
 
@@ -446,33 +455,33 @@ function parseButtonNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
 function parseCardNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   // Extract variant
   extractVariant(figmaNode, node);
-  
+
   // Extract padding
   const layout = extractLayout(figmaNode);
   if (layout?.padding) {
     node.layout = { padding: layout.padding };
   }
-  
+
   // Extract TEXT type children into parent's text field
   extractTextChildren(figmaNode, node);
-  
+
   // Recurse into children (but apply semantic collapse)
   if (figmaNode.children && figmaNode.children.length > 0) {
     const children: UITreeNode[] = [];
-    
+
     for (const child of figmaNode.children) {
       // Skip TEXT type children (already extracted)
       if ((child as any).type === 'TEXT') {
         continue;
       }
-      
+
       const childName = child.name || '';
       const { componentType } = parseComponentName(childName);
-      
+
       // Only recurse into semantic children
       if (isSemanticChild(componentType)) {
         const parsedChild = parseFigmaNode(child as FigmaNode);
-        
+
         // Drop layout-only VIEW nodes with 0 semantic children
         if (parsedChild.componentType === 'VIEW' && !hasSemanticContent(parsedChild)) {
           // Skip this wrapper
@@ -484,12 +493,12 @@ function parseCardNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
         }
       }
     }
-    
+
     if (children.length > 0) {
       node.children = children;
     }
   }
-  
+
   return node;
 }
 
@@ -503,17 +512,17 @@ function parseInputNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   if (layout) {
     node.layout = layout;
   }
-  
+
   // Extract placeholder and label from TEXT children
   // Text content is in the "name" field
   if (figmaNode.children) {
     const textNodes: Array<{ text: string; isLabel?: boolean }> = [];
-    
+
     for (const child of figmaNode.children) {
       if ((child as any).type === 'TEXT') {
         const childName = (child as any).name || '';
         const text = childName; // Text is in the name field
-        
+
         if (childName.toLowerCase().includes('label')) {
           textNodes.push({ text, isLabel: true });
         } else {
@@ -521,20 +530,20 @@ function parseInputNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
         }
       }
     }
-    
+
     // First non-label TEXT is placeholder
     const placeholder = textNodes.find(t => !t.isLabel);
     if (placeholder) {
       node.text = placeholder.text;
     }
-    
+
     // Label TEXT becomes title
     const label = textNodes.find(t => t.isLabel);
     if (label) {
       node.title = label.text;
     }
   }
-  
+
   // INPUT nodes do NOT recurse (semantic collapse)
   return node;
 }
@@ -549,6 +558,116 @@ function parseIconNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
 }
 
 /**
+ * Step 3G: Parse DROPDOWN node
+ * Extracts placeholder from inner TEXT node (e.g., "Select Option")
+ * Props: placeholder, label, disabled
+ */
+function parseDropdownNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
+  // Extract layout
+  const layout = extractLayout(figmaNode);
+  if (layout) {
+    node.layout = layout;
+  }
+
+  node.props = node.props || {};
+
+  // Traverse children to find TEXT descendants for placeholder
+  // Structure: DROPDOWN > GROUP (Label and Container_PLACEHOLDER) > FRAME (InputField_TEXT) > TEXT
+  if (figmaNode.children) {
+    const textDescendant = findFirstTextDescendant(figmaNode);
+    if (textDescendant) {
+      // The `characters` field contains the actual placeholder text
+      const placeholderText = (textDescendant as any).characters || textDescendant.name || '';
+      if (placeholderText) {
+        node.props.placeholder = placeholderText;
+      }
+    }
+  }
+
+  // DROPDOWN nodes do NOT recurse (semantic collapse)
+  return node;
+}
+
+/**
+ * Step 3H: Parse CHECKBOX node
+ * Extracts checked state from _TRUE/_FALSE child and label from TEXT child
+ * Props: checked, label, disabled
+ */
+function parseCheckboxNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
+  // Extract layout
+  const layout = extractLayout(figmaNode);
+  if (layout) {
+    node.layout = layout;
+  }
+
+  node.props = node.props || {};
+
+  if (figmaNode.children) {
+    for (const child of figmaNode.children) {
+      const childName = child.name || '';
+
+      // Check for _TRUE or _FALSE child to determine checked state
+      if (childName === '_TRUE') {
+        node.props.checked = true;
+      } else if (childName === '_FALSE') {
+        node.props.checked = false;
+      }
+
+      // Extract label from TEXT child (name contains "Label" or type is TEXT)
+      if ((child as any).type === 'TEXT') {
+        const labelText = (child as any).characters || child.name || '';
+        if (labelText) {
+          node.props.label = labelText;
+        }
+      }
+    }
+  }
+
+  // CHECKBOX nodes do NOT recurse (semantic collapse)
+  return node;
+}
+
+/**
+ * Step 3I: Parse RADIO node
+ * Extracts selected state from _TRUE/_FALSE child and label from TEXT child
+ * For RadioGroup, this represents one option - the label becomes part of options array
+ * Props: value (derived from componentName), label
+ */
+function parseRadioNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
+  // Extract layout
+  const layout = extractLayout(figmaNode);
+  if (layout) {
+    node.layout = layout;
+  }
+
+  node.props = node.props || {};
+
+  if (figmaNode.children) {
+    for (const child of figmaNode.children) {
+      const childName = child.name || '';
+
+      // Check for _TRUE or _FALSE child to determine selected state
+      if (childName === '_TRUE') {
+        node.props.selected = true;
+      } else if (childName === '_FALSE') {
+        node.props.selected = false;
+      }
+
+      // Extract label from TEXT child (name is "Text" or "Label", type is TEXT)
+      if ((child as any).type === 'TEXT') {
+        const labelText = (child as any).characters || '';
+        if (labelText) {
+          node.props.label = labelText;
+        }
+      }
+    }
+  }
+
+  // RADIO nodes do NOT recurse (semantic collapse)
+  return node;
+}
+
+/**
  * Step 3F: Parse layout container (VIEW, SCROLLABLE_VIEW, HEADER, TOPBAR)
  * Rules: Always recurse, no text/title/subtitle, no action
  * Extract TEXT type children into parent's text field
@@ -559,22 +678,22 @@ function parseLayoutNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   if (layout) {
     node.layout = layout;
   }
-  
+
   // Extract TEXT type children into parent's text field
   extractTextChildren(figmaNode, node);
-  
+
   // Recurse into children (apply semantic collapse)
   if (figmaNode.children && figmaNode.children.length > 0) {
     const children: UITreeNode[] = [];
-    
+
     for (const child of figmaNode.children) {
       // Skip TEXT type children (already extracted)
       if ((child as any).type === 'TEXT') {
         continue;
       }
-      
+
       const parsedChild = parseFigmaNode(child as FigmaNode);
-      
+
       // Drop layout-only VIEW nodes with 0 semantic children
       if (parsedChild.componentType === 'VIEW' && !hasSemanticContent(parsedChild)) {
         if (parsedChild.children) {
@@ -584,12 +703,12 @@ function parseLayoutNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
         children.push(parsedChild);
       }
     }
-    
+
     if (children.length > 0) {
       node.children = children;
     }
   }
-  
+
   return node;
 }
 
@@ -670,14 +789,14 @@ function extractVariant(figmaNode: FigmaNode, node: UITreeNode): void {
 
   // Check for visible strokes
   // Cast to any because your interface has unknown[] for strokes/fills
-  const hasStrokes = Array.isArray(figmaNode.strokes) && 
-                     figmaNode.strokes.length > 0 && 
-                     figmaNode.strokes.some((s: any) => s.visible !== false);
+  const hasStrokes = Array.isArray(figmaNode.strokes) &&
+    figmaNode.strokes.length > 0 &&
+    figmaNode.strokes.some((s: any) => s.visible !== false);
 
   // Check for visible solid fills
-  const hasFills = Array.isArray(figmaNode.fills) && 
-                   figmaNode.fills.length > 0 && 
-                   figmaNode.fills.some((f: any) => f.visible !== false && f.type === 'SOLID');
+  const hasFills = Array.isArray(figmaNode.fills) &&
+    figmaNode.fills.length > 0 &&
+    figmaNode.fills.some((f: any) => f.visible !== false && f.type === 'SOLID');
 
   if (hasStrokes && !hasFills) {
     node.styleHints.variant = 'outline';
@@ -711,14 +830,14 @@ function isFigmaNodeIcon(node: FigmaNode): boolean {
  * Helper: Check if component type is a layout container
  */
 function isLayoutContainer(componentType: string): boolean {
-  return ['VIEW', 'SCROLLABLE_VIEW', 'HEADER', 'TOPBAR', 'SAFEAREAVIEW', 'CARD', 'BUTTON', 'INPUT', 'SEARCHABLE_INPUT'].includes(componentType);
+  return ['VIEW', 'SCROLLABLE_VIEW', 'HEADER', 'TOPBAR', 'SAFEAREAVIEW', 'CARD', 'BUTTON', 'INPUT', 'SEARCHABLE_INPUT', 'DROPDOWN', 'CHECKBOX', 'RADIO'].includes(componentType);
 }
 
 /**
  * Helper: Check if component type is a semantic child (allowed in CARD)
  */
 function isSemanticChild(componentType: string): boolean {
-  return ['VIEW', 'TEXT', 'SVG', 'ICON', 'BUTTON'].includes(componentType);
+  return ['VIEW', 'TEXT', 'SVG', 'ICON', 'BUTTON', 'DROPDOWN', 'CHECKBOX', 'RADIO'].includes(componentType);
 }
 
 /**
@@ -728,13 +847,13 @@ function hasSemanticContent(node: UITreeNode): boolean {
   if (node.text || node.title || node.subtitle) {
     return true;
   }
-  
+
   if (node.children) {
-    return node.children.some(child => 
+    return node.children.some(child =>
       child.componentType !== 'VIEW' || hasSemanticContent(child)
     );
   }
-  
+
   return false;
 }
 
@@ -745,16 +864,16 @@ function hasSemanticContent(node: UITreeNode): boolean {
  */
 function extractTextChildren(figmaNode: FigmaNode, node: UITreeNode): void {
   if (!figmaNode.children) return;
-  
+
   // Find all direct TEXT type children
   const textChildren = figmaNode.children.filter((child: any) => child.type === 'TEXT');
-  
+
   if (textChildren.length > 0) {
     // Use the first TEXT child's name as the text
     const firstText = textChildren[0];
     if (firstText.name) {
       node.text = firstText.name;
-      
+
       // Extract size from fontSize if available
       if (firstText.style?.fontSize) {
         const fontSize = firstText.style.fontSize;
@@ -778,14 +897,14 @@ function findFirstTextDescendant(figmaNode: FigmaNode): FigmaNode | null {
   if (figmaNode.type === 'TEXT' && figmaNode.name) {
     return figmaNode;
   }
-  
+
   if (figmaNode.children) {
     for (const child of figmaNode.children) {
       const textNode = findFirstTextDescendant(child as FigmaNode);
       if (textNode) return textNode;
     }
   }
-  
+
   return null;
 }
 
@@ -795,12 +914,12 @@ function findFirstTextDescendant(figmaNode: FigmaNode): FigmaNode | null {
  */
 function collectTextDescendants(figmaNode: FigmaNode, texts: string[], limit: number = Infinity): void {
   if (texts.length >= limit) return;
-  
+
   if (figmaNode.type === 'TEXT' && figmaNode.name) {
     texts.push(figmaNode.name);
     return;
   }
-  
+
   if (figmaNode.children) {
     for (const child of figmaNode.children) {
       if (texts.length >= limit) break;
