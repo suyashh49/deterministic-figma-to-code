@@ -142,18 +142,25 @@ export function parseFigmaNode(figmaNode: FigmaNode): UITreeNode {
   }
 
   // RULE T2: TEXT wrapper frame (name ends with _TEXT)
+  // This handles containers like "Container_TEXT" which wrap multiple text elements
   if (figmaNode.type === 'FRAME' || figmaNode.type === 'COMPONENT') {
     const name = figmaNode.name || '';
     if (name.endsWith('_TEXT')) {
-      const children = figmaNode.children || [];
-      if (children.length === 1 && (children[0] as any).type === 'TEXT') {
-        const textChild = children[0] as any;
+      // Collect ALL nested TEXT nodes as children
+      const textChildren: UITreeNode[] = [];
+      collectAllTextNodes(figmaNode, textChildren);
+
+      if (textChildren.length === 1) {
+        // Single TEXT: return as a single TEXT node
+        return textChildren[0];
+      } else if (textChildren.length > 1) {
+        // Multiple TEXTs: return as a VIEW containing TEXT children
         return {
           id: figmaNode.id,
-          componentType: 'TEXT',
+          componentType: 'VIEW',
           componentName: name.replace(/_TEXT$/, ''),
           role: name,
-          text: textChild.characters || '',
+          children: textChildren,
         };
       }
     }
@@ -1261,6 +1268,37 @@ function sortChildrenByPosition(children: FigmaNode[], layoutMode?: 'HORIZONTAL'
     }
     return yDiff;
   });
+}
+
+/**
+ * Recursively collect all TEXT nodes from a Figma node tree
+ * Used by _TEXT wrapper handling to extract all text descendants
+ */
+function collectAllTextNodes(figmaNode: FigmaNode, results: UITreeNode[]): void {
+  if (figmaNode.type === 'TEXT') {
+    const textNode: UITreeNode = {
+      id: figmaNode.id,
+      componentType: 'TEXT',
+      componentName: figmaNode.name || 'Text',
+      text: figmaNode.characters || '',
+    };
+
+    // Extract styles from the TEXT node
+    const styles = extractStyles(figmaNode);
+    if (styles && Object.keys(styles).length > 0) {
+      textNode.styles = styles;
+    }
+
+    results.push(textNode);
+    return;
+  }
+
+  // Recurse into children
+  if (figmaNode.children) {
+    for (const child of figmaNode.children) {
+      collectAllTextNodes(child as FigmaNode, results);
+    }
+  }
 }
 
 export { figmaColorToHex, extractStyles, extractBounds, sortChildrenByPosition };
