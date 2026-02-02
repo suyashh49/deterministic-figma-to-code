@@ -81,12 +81,33 @@ function generateComponent(
 
     // Handle components with children
     if (mapping.hasChildren && node.children && node.children.length > 0) {
-        const childrenCode = node.children
-            .map(child => generateComponent(child, depth + 1, usedComponents, rnImports))
-            .join('\n');
+        const gap = node.layout?.gap || 0;
+        const isHorizontal = node.layout?.direction === 'horizontal';
+        
+        // Generate children code with conditional spacers
+        const childrenCode = node.children.map((child, index) => {
+            // 1. Generate the child's code
+            const childCode = generateComponent(child, depth + 1, usedComponents, rnImports);
+            
+            // 2. Determine if we need a spacer after this child
+            const isLast = index === node.children!.length - 1;
+            
+            // STRICT CHECK: Only add spacer if THIS child is a 'VIEW'
+            // (You can add 'CARD' || 'SCROLLABLE_VIEW' here if those count as Views to you)
+            const shouldAddSpacer = !isLast &&  child.componentType === 'VIEW';
+
+            if (shouldAddSpacer) {
+                usedComponents.add('Spacer');
+                const spacerIndent = '  '.repeat(depth + 1);
+                const spacerProps = isHorizontal ? `horizontal size={${gap}}` : `size={12}`;
+                return `${childCode}\n${spacerIndent}<Spacer ${spacerProps} />`;
+            }
+
+            return childCode;
+        }).join('\n');
+
         return `${indent}<${mapping.component}${propsStr}>\n${childrenCode}\n${indent}</${mapping.component}>`;
     }
-
     // Handle components without children (self-closing)
     return `${indent}<${mapping.component}${propsStr} />`;
 }

@@ -124,6 +124,42 @@ export const COMPONENT_MAP: Record<string, ComponentMapping> = {
         }),
     },
 
+    // ============================================
+    // Media & Avatars
+    // ============================================
+    'AVATAR': {
+        component: 'Avatar',
+        propMapper: (node) => ({
+            // 1. Map Name: Prioritize explicit prop (from JSON), fallback to text content
+            name: node.props?.name || node.text,
+
+            // 2. Map Size: Prioritize explicit prop (from JSON), fallback to styleHints
+            size: mapAvatarSize(node.props?.size || node.styleHints?.size),
+
+            // 3. Map Source: Handle source object or raw URL string
+            source: node.props?.source || (node.props?.imageUrl ? { uri: node.props.imageUrl } : undefined),
+
+            // 4. Interaction
+            onPress: node.action?.type === 'press' ? '() => {}' : undefined,
+
+            // 5. Visual Overrides: Map background color from 'styles' to containerStyle
+            containerStyle: node.styles?.backgroundColor 
+                ? { backgroundColor: node.styles.backgroundColor } 
+                : undefined,
+        }),
+    },
+
+    // ============================================
+    // Layout Utilities
+    // ============================================
+    'SPACER': {
+        component: 'Spacer',
+        propMapper: (node) => ({
+            size: node.props?.size || 0,
+            horizontal: node.props?.horizontal,
+        }),
+    },
+
     'INPUT': {
         component: 'TextInput',
         propMapper: (node) => ({
@@ -191,6 +227,8 @@ export const COMPONENT_MAP: Record<string, ComponentMapping> = {
         additionalImports: ['ScrollView'],
         propMapper: (node) => ({
             contentContainerStyle: buildLayoutStyle(node),
+            backgroundColor: '#FFFFFF', // Ensure background is set
+            paddingHorizontal: 24
         }),
     },
 
@@ -215,7 +253,7 @@ export const COMPONENT_MAP: Record<string, ComponentMapping> = {
         hasChildren: true,
         additionalImports: ['SafeAreaView'],
         propMapper: (node) => ({
-            style: { flex: 1, ...buildLayoutStyle(node) },
+            style: { flex: 1, ...buildLayoutStyle(node),backgroundColor: '#FFFFFF', paddingHorizontal: 32 },
         }),
     },
 
@@ -283,6 +321,22 @@ function mapCardVariant(variant?: string): 'elevated' | 'outlined' | 'filled' {
         case 'elevated':
         default:
             return 'elevated';
+    }
+}
+
+
+/**
+ * Map generic string size to AvatarSize
+ */
+function mapAvatarSize(size?: string): 'xs' | 'sm' | 'md' | 'lg' | 'xl' {
+    switch (size) {
+        case 'xs': return 'xs';
+        case 'sm': return 'sm';
+        case 'lg': return 'lg';
+        case 'xl': return 'xl';
+        case 'md':
+        default:
+            return 'md';
     }
 }
 

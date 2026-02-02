@@ -250,6 +250,9 @@ export function parseFigmaNode(figmaNode: FigmaNode): UITreeNode {
 
     case 'CARD':
       return parseCardNode(figmaNode, node);
+    
+    case 'AVATAR':
+      return parseAvatarNode(figmaNode, node);
 
     case 'INPUT':
     case 'SEARCHABLE_INPUT':
@@ -527,6 +530,70 @@ function parseChipNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
     node.action = { type: 'press' };
   }
 
+  return node;
+}
+
+
+/**
+ * Step 3H: Parse AVATAR node
+ * Logic:
+ * 1. Size: Standardized mapping of width -> 'xs' | 'sm' | 'md' | 'lg' | 'xl'.
+ * 2. Initials: Extract text characters -> props.name.
+ * 3. Image: Detect IMAGE fill -> props.source.
+ * 4. Interaction: Always pressable (per interface).
+ */
+function parseAvatarNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
+  // 1. Layout
+  const layout = extractLayout(figmaNode);
+  if (layout) {
+    node.layout = layout;
+  }
+  
+  node.props = node.props || {};
+
+  // 2. Extract Size (Standardized Scale)
+  // Use absolute width as the source of truth
+  const width = (figmaNode as any).absoluteBoundingBox?.width;
+
+  if (typeof width === 'number') {
+    if (width <= 24) {
+      node.props.size = 'xs';  // e.g. 16px, 20px, 24px
+    } else if (width <= 34) {
+      node.props.size = 'sm';  // e.g. 28px, 32px
+    } else if (width <= 48) {
+      node.props.size = 'md';  // e.g. 40px, 44px, 48px
+    } else if (width <= 72) {
+      node.props.size = 'lg';  // e.g. 56px, 64px
+    } else {
+      node.props.size = 'xl';  // e.g. 80px, 96px, 128px
+    }
+  } else {
+    // Default fallback if no width found
+    node.props.size = 'md';
+  }
+
+  // 3. Extract Content
+  
+  // A. Check for Image Fill (Source)
+  const hasImageFill = Array.isArray(figmaNode.fills) && 
+    figmaNode.fills.some((f: any) => f.visible !== false && f.type === 'IMAGE');
+
+  if (hasImageFill) {
+    node.props.source = { uri: 'placeholder_url' };
+  }
+
+  // B. Check for Text (Initials)
+  if (figmaNode.children) {
+    const textChild = findFirstTextDescendant(figmaNode);
+    if (textChild) {
+      node.props.name = (textChild as any).characters || textChild.name;
+    }
+  }
+
+  // 4. Interaction
+  node.action = { type: 'press' };
+
+  // 5. Semantic Collapse
   return node;
 }
 
