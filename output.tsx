@@ -1,6 +1,12 @@
 import React from 'react';
+<<<<<<< Updated upstream
 import { SafeAreaView, ScrollView, Text, View } from 'react-native';
 import { Button, Card, Header, ListItem, SearchableInput, Spacer } from '../components';
+=======
+import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Button, Card, SearchableInput, Spacer } from '../components';
+import { Menu } from 'lucide-react-native';
+>>>>>>> Stashed changes
 
 export default function GeneratedScreen() {
   return (
@@ -34,6 +40,7 @@ export default function GeneratedScreen() {
               <Text
   style={{"color":"#101828","fontSize":16,"fontWeight":400,"fontFamily":"Inter"}}
 >Common Issues</Text>
+<<<<<<< Updated upstream
               <View style={{"gap":12}}>
                 <View
   style={{"paddingTop":16.57501220703125,"paddingRight":16.57497787475586,"paddingBottom":0.5822169780731201,"paddingLeft":16.57498550415039,"backgroundColor":"#FFFFFF","borderColor":"#E5E7EB","borderWidth":0.5822169780731201,"borderRadius":14}}
@@ -124,6 +131,37 @@ export default function GeneratedScreen() {
                   <View
   style={{"width":24,"height":24,"backgroundColor":"#E5E7EB"}}
  />
+=======
+              <View
+  style={{"flexDirection":"row","gap":12,"alignItems":"center"}}
+>
+                <View style={{"gap":12}}>
+                  <Card variant="elevated" padding="md" onPress={() => {}} />
+                  <Card variant="elevated" padding="md" onPress={() => {}} />
+                  <Card variant="elevated" padding="md" onPress={() => {}} />
+                  <Card variant="elevated" padding="md" onPress={() => {}} />
+                  <Card variant="elevated" padding="md" onPress={() => {}} />
+                  <Card variant="elevated" padding="md" onPress={() => {}} />
+                </View>
+              </View>
+            </View>
+            <Spacer size={12} />
+            <View
+  style={{"gap":15.992778778076172,"paddingRight":15.992767333984375,"paddingLeft":15.992767333984375}}
+>
+              <Text
+  style={{"color":"#101828","fontSize":16,"fontWeight":400,"fontFamily":"Inter"}}
+>Contact Support</Text>
+              <View
+  style={{"gap":15.99276351928711,"paddingTop":23.99822998046875,"paddingRight":23.998241424560547,"paddingLeft":23.998249053955078,"borderRadius":14}}
+>
+                <View
+  style={{"flexDirection":"row","gap":11.999122619628906,"alignItems":"center"}}
+>
+                  <View
+  style={{"width":24,"height":24,"backgroundColor":"#E5E7EB"}}
+ />
+>>>>>>> Stashed changes
                   <View style={{"gap":3.993633270263672}}>
                     <Text
   style={{"color":"#FFFFFF","fontSize":16,"fontWeight":400,"fontFamily":"Inter"}}
@@ -140,6 +178,7 @@ export default function GeneratedScreen() {
   size="md"
   onPress={() => {}}
   buttonStyle={{"backgroundColor":"#FFFFFF"}}
+<<<<<<< Updated upstream
  />
               </View>
               <Spacer size={12} />
@@ -196,6 +235,41 @@ export default function GeneratedScreen() {
         </View>
       </ScrollView>
       <Header showBackButton onBackPress={() => {}} />
+=======
+ />
+              </View>
+              <Spacer size={12} />
+              <View>
+                <Card variant="elevated" padding="md" onPress={() => {}} />
+                <Card variant="elevated" padding="md" onPress={() => {}} />
+              </View>
+            </View>
+            <Spacer size={12} />
+            <View
+  style={{"gap":15.992717742919922,"paddingTop":23.998291015625,"paddingRight":15.992767333984375,"paddingLeft":15.992767333984375,"backgroundColor":"#FFFFFF"}}
+>
+              <Text
+  style={{"color":"#101828","fontSize":16,"fontWeight":400,"fontFamily":"Inter"}}
+>Self-Help Resources</Text>
+              <View style={{"gap":11.999107360839844}}>
+                <Card variant="outlined" padding="md" onPress={() => {}} />
+                <Card variant="outlined" padding="md" onPress={() => {}} />
+                <Card variant="outlined" padding="md" onPress={() => {}} />
+                <Card variant="outlined" padding="md" onPress={() => {}} />
+              </View>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+      <Header
+  title="Cignal One"
+  backgroundColor="#FFFFFF"
+  showBackButton={false}
+  leftAction={(<Menu size={24} color="#000" />)}
+  rightAction={(<TouchableOpacity onPress={() => {}}><Menu size={24} color="#000" /></TouchableOpacity>)}
+  containerStyle={{"borderBottomWidth":1,"borderBottomColor":"#E5E7EB"}}
+ />
+>>>>>>> Stashed changes
     </SafeAreaView>
   );
 }

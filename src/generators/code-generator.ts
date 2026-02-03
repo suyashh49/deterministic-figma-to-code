@@ -24,7 +24,7 @@ export function generateCode(uiTree: UITreeNode): string {
     const componentCode = generateComponent(uiTree, 2, usedComponents, rnImports);
 
     // Generate imports
-    const imports = generateImports(usedComponents, rnImports);
+    const imports = generateImports(usedComponents, rnImports, componentCode);
 
     // Assemble the full file
     return generateScreenTemplate(imports, componentCode);
@@ -114,6 +114,7 @@ function generateComponent(
 
 /**
  * Generate props as JSX string
+ * FIXED: Detects JSX strings starting with '(<' and wraps them in {}
  */
 function generatePropsString(
     props: Record<string, any>,
@@ -133,12 +134,20 @@ function generatePropsString(
         }
 
         if (typeof value === 'string') {
-            // Check if it's a function placeholder
+            // 1. Check for Function placeholders (e.g. "() => {}")
             if (value.startsWith('()') || value.startsWith('(value)') || value.startsWith('(text)')) {
                 return `${key}={${value}}`;
             }
+            
+            // 2. Check for JSX placeholders (e.g. "(<Icon />)")  <-- THIS IS THE FIX
+            if (value.startsWith('(<')) {
+                 return `${key}={${value}}`;
+            }
+
+            // 3. Regular strings
             return `${key}="${value}"`;
         }
+        
         if (typeof value === 'boolean') {
             return value ? key : `${key}={false}`;
         }
@@ -151,34 +160,31 @@ function generatePropsString(
         return `${key}={${JSON.stringify(value)}}`;
     });
 
-    // If props are short, keep on same line
+    // Formatting logic
     if (propsArr.join(' ').length < 60) {
         return ' ' + propsArr.join(' ');
     }
-
-    // Otherwise, multi-line
     return '\n  ' + propsArr.join('\n  ') + '\n';
 }
 
-/**
- * Generate import statements
- */
-function generateImports(usedComponents: Set<string>, rnImports: Set<string>): string {
+function generateImports(usedComponents: Set<string>, rnImports: Set<string>, fullSourceCode: string): string {
     const imports: string[] = [];
-
-    // React import
     imports.push("import React from 'react';");
 
-    // React Native imports
+    // 1. React Native Imports
     if (rnImports.size > 0) {
-        const rnComponentList = Array.from(rnImports).sort().join(', ');
-        imports.push(`import { ${rnComponentList} } from 'react-native';`);
+        imports.push(`import { ${Array.from(rnImports).sort().join(', ')} } from 'react-native';`);
     }
 
-    // Component library imports
+    // 2. Component Library Imports
     if (usedComponents.size > 0) {
-        const componentList = Array.from(usedComponents).sort().join(', ');
-        imports.push(`import { ${componentList} } from '../components';`);
+        imports.push(`import { ${Array.from(usedComponents).sort().join(', ')} } from '../components';`);
+    }
+
+    // 3. Lucide Icons Import (The "1 Icon" Logic)
+    // If the code contains <Menu, automatically import it.
+    if (fullSourceCode.includes('<Menu')) {
+        imports.push("import { Menu } from 'lucide-react-native';");
     }
 
     return imports.join('\n');

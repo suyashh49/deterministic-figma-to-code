@@ -11,6 +11,44 @@
 import { UITreeNode } from '../types/ui-tree';
 
 /**
+ * Represents a Color in Figma (0-1 RGBA)
+ */
+interface FigmaColor {
+  r: number;
+  g: number;
+  b: number;
+  a?: number; // Alpha might be explicit or implied
+}
+
+/**
+ * Represents a vector coordinate (0-1)
+ */
+interface FigmaVector {
+  x: number;
+  y: number;
+}
+
+/**
+ * Represents a generic Paint object (Fill or Stroke)
+ * Covers SOLID, GRADIENT_LINEAR, IMAGE, etc.
+ */
+interface FigmaPaint {
+  type: 'SOLID' | 'GRADIENT_LINEAR' | 'GRADIENT_RADIAL' | 'GRADIENT_ANGULAR' | 'GRADIENT_DIAMOND' | 'IMAGE' | string;
+  visible?: boolean;
+  opacity?: number;
+  
+  // For SOLID
+  color?: FigmaColor;
+  
+  // For GRADIENTS
+  gradientHandlePositions?: FigmaVector[]; // [Start, End, Skew]
+  gradientStops?: {
+    color: FigmaColor;
+    position: number; // 0 to 1
+  }[];
+}
+
+/**
  * Figma node type (minimal interface - only whitelisted fields)
  */
 interface FigmaNode {
@@ -19,8 +57,21 @@ interface FigmaNode {
   type: string;
   visible?: boolean;
   opacity?: number;
+  
+  // Children
   children?: FigmaNode[];
+  
+  // Text Properties
   characters?: string;
+  style?: {
+    fontSize?: number;
+    fontWeight?: number | string;
+    fontFamily?: string;
+    letterSpacing?: number;
+    lineHeightPx?: number;
+  };
+  
+  // Layout / AutoLayout
   layoutMode?: 'HORIZONTAL' | 'VERTICAL' | 'NONE';
   itemSpacing?: number;
   paddingLeft?: number;
@@ -28,24 +79,31 @@ interface FigmaNode {
   paddingTop?: number;
   paddingBottom?: number;
   counterAxisAlignItems?: 'MIN' | 'CENTER' | 'MAX' | 'STRETCH';
+  
+  // Geometry
   absoluteBoundingBox?: {
     x: number;
     y: number;
     width: number;
     height: number;
   };
-  style?: {
-    fontSize?: number;
-  };
-  strokes?: unknown[];
-  fills?: unknown[];
+  cornerRadius?: number;
+  
+  // Styling (Updated Types)
+  strokes?: FigmaPaint[];
+  fills?: FigmaPaint[];
+  strokeWeight?: number;
+  
   effects?: {
     type: string;
     visible?: boolean;
+    radius?: number;
+    offset?: FigmaVector;
+    color?: FigmaColor;
   }[];
+  
   [key: string]: unknown;
 }
-
 /**
  * Main entry point: Generate UI Tree from Figma JSON
  * Root is just another component following the naming pattern
@@ -798,10 +856,18 @@ function parseInputNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
 
 /**
  * Step 3E: Parse ICON/SVG node
- * Rules: No recursion, no layout, no text, no action
  */
 function parseIconNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
-  // ICON/SVG nodes are minimal - no additional extraction
+  node.props = node.props || {};
+
+  // Use Shared Helper here!
+  // It transforms "Container_SVG" -> "Search" automatically
+  const realName = extractActionName(figmaNode);
+
+  node.componentName = realName;
+  node.props.name = realName;
+
+  // Stop recursion (Icons are leaves)
   return node;
 }
 
@@ -927,6 +993,14 @@ function parseLayoutNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
     node.layout = layout;
   }
 
+  // 2. Extract Styles (Background Color, Border, Radius)
+  // We explicitly run this here to ensure Views capture their visual design
+  const styles = extractStyles(figmaNode);
+  if (styles) {
+    // Merge with any existing styles (prioritizing the direct extraction)
+    node.styles = { ...node.styles, ...styles };
+  }
+
   // Extract TEXT type children into parent's text field
   extractTextChildren(figmaNode, node);
 
@@ -948,7 +1022,13 @@ function parseLayoutNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
       // Drop layout-only VIEW nodes with 0 semantic children
       if (parsedChild.componentType === 'VIEW' && !hasSemanticContent(parsedChild)) {
         if (parsedChild.children) {
-          children.push(...parsedChild.children);
+          const hasBackground = parsedChild.styles && parsedChild.styles.backgroundColor;
+          
+          if (!hasBackground) {
+             children.push(...parsedChild.children);
+          } else {
+             children.push(parsedChild);
+          }
         }
       } else {
         children.push(parsedChild);
@@ -963,6 +1043,129 @@ function parseLayoutNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   return node;
 }
 
+
+
+
+
+/**
+ * Step 3I: Parse HEADER node
+ */
+function parseHeaderNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
+  // 1. Layout & Props
+  const layout = extractLayout(figmaNode);
+  if (layout) node.layout = layout;
+  node.props = node.props || {};
+
+  // 2. Find Content Row (Drill down logic)
+  let contentRow = figmaNode;
+  if (figmaNode.children && figmaNode.children.length === 1 && figmaNode.children[0].type === 'FRAME') {
+    contentRow = figmaNode.children[0];
+  }
+  if (!contentRow.children || contentRow.children.length === 0) return node;
+
+  // 3. Spatial Sort (Left -> Right)
+  const sortedChildren = [...contentRow.children].sort((a, b) => {
+    return ((a as any).absoluteBoundingBox?.x || 0) - ((b as any).absoluteBoundingBox?.x || 0);
+  });
+
+  // 4. Identify Title
+  let titleNode = sortedChildren.find(child => {
+    const name = (child.name || '').toUpperCase();
+    return name.includes('HEADING') || name.includes('TITLE');
+  });
+  
+  if (!titleNode) {
+    titleNode = sortedChildren.find(child => findFirstTextDescendant(child) !== null);
+  }
+
+  if (titleNode) {
+    const textChild = findFirstTextDescendant(titleNode);
+    if (textChild) node.props.title = (textChild as any).characters;
+  }
+
+  // 5. Identify Actions using Shared Helper
+  const titleX = (titleNode as any)?.absoluteBoundingBox?.x || 0;
+
+  sortedChildren.forEach(child => {
+    if (child === titleNode) return; 
+
+    const childX = (child as any).absoluteBoundingBox?.x || 0;
+    const name = (child.name || '').toUpperCase();
+
+    // Use Shared Helper here!
+    const actionName = extractActionName(child);
+
+    if (!titleNode || childX < titleX) {
+      // Special check for Back Button naming convention
+      if (name.includes('_BACKBUTTON')) {
+        node.props!.showBackButton = true;
+        node.props!.onBackPress = (() => {}) as any;
+      } else {
+        node.props!.leftAction = actionName;
+      }
+    } else if (childX > titleX) {
+      node.props!.rightAction = actionName;
+    }
+  });
+
+  return node;
+}
+/**
+ * SHARED HELPER: Extract meaningful name from a generic container.
+ * Used by: parseHeaderNode, parseIconNode
+ */
+function extractActionName(node: FigmaNode): string {
+  // 1. Get component name from the node itself
+  let { componentName } = parseComponentName(node.name || '');
+  
+  // List of generic names to ignore
+  const genericNames = ['Container', 'Button', 'Frame', 'View', 'Group', 'SVG', 'Icon'];
+
+  // 2. If the node name is specific (e.g. "Menu_SVG"), return it immediately.
+  if (componentName && !genericNames.includes(componentName)) {
+    return componentName;
+  }
+
+  // 3. If generic, look inside children
+  if (node.children && node.children.length > 0) {
+    // A. Check for Text (e.g. "Cancel" button)
+    const textChild = findFirstTextDescendant(node);
+    if (textChild) {
+      const chars = (textChild as any).characters;
+      // Use text if it's short (likely a button label)
+      if (chars && chars.length < 10) return chars;
+    }
+
+    // B. Check for Icon/Vector
+    const iconChild = findIconDescendant(node);
+    if (iconChild) {
+      // If the child is also generic (e.g. "Vector"), fallback to "Icon"
+      if (iconChild.name === 'Vector' || iconChild.name === 'Icon') {
+        return 'Icon';
+      }
+      // Return the specific icon name (e.g. "Search" from "Search_ICON")
+      const childName = parseComponentName(iconChild.name || '').componentName;
+      return childName || iconChild.name || 'Icon';
+    }
+  }
+
+  // 4. Fallback
+  return 'Icon';
+}
+
+/**
+ * Helper: Recursive search for the first Icon/Vector node
+ */
+function findIconDescendant(node: FigmaNode): FigmaNode | null {
+  if (isFigmaNodeIcon(node)) return node;
+  if (node.children) {
+    for (const child of node.children) {
+      const found = findIconDescendant(child);
+      if (found) return found;
+    }
+  }
+  return null;
+}
 /**
  * Extract layout information (whitelist only)
  */
@@ -1184,79 +1387,71 @@ function collectTextDescendants(figmaNode: FigmaNode, texts: string[], limit: nu
 // ============================================================================
 
 /**
- * Convert Figma color (0-1 float) to hex or rgba string
- */
-function figmaColorToHex(color: { r: number; g: number; b: number; a?: number }, opacity: number = 1): string {
-  if (!color) return 'transparent';
-
-  const to255 = (n: number) => Math.round(n * 255);
-  const finalAlpha = (color.a ?? 1) * opacity;
-
-  // If alpha is 0, return transparent
-  if (finalAlpha === 0) return 'transparent';
-
-  const r = to255(color.r);
-  const g = to255(color.g);
-  const b = to255(color.b);
-
-  // If alpha is less than 1, use rgba
-  if (finalAlpha < 1) {
-    return `rgba(${r}, ${g}, ${b}, ${finalAlpha.toFixed(2)})`;
-  }
-
-  // Otherwise, use hex
-  const toHex = (n: number) => n.toString(16).padStart(2, '0');
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
-}
-
-/**
- * Extract visual styles (colors, borders, etc.) from Figma node
+ * Extract visual styles (colors, borders, gradients, etc.) from Figma node
  */
 function extractStyles(figmaNode: FigmaNode): UITreeNode['styles'] | undefined {
   const styles: UITreeNode['styles'] = {};
   let hasStyles = false;
 
-  // 1. Extract background color from fills
+  // 1. Extract Background (Solid OR Gradient) from FILLS
   if (Array.isArray(figmaNode.fills)) {
-    const solidFill = figmaNode.fills.find((f: any) =>
-      f.visible !== false && f.type === 'SOLID' && f.color
-    ) as any;
+    // A. Check for Gradient Fill first (usually visually dominant or an overlay)
+    const gradientFill = figmaNode.fills.find((f: any) =>
+      f.visible !== false && 
+      ['GRADIENT_LINEAR', 'GRADIENT_RADIAL', 'GRADIENT_ANGULAR'].includes(f.type)
+    );
 
-    if (solidFill) {
-      const color = figmaColorToHex(solidFill.color, solidFill.opacity ?? 1);
-      if (color !== 'transparent') {
-        styles.backgroundColor = color;
+    if (gradientFill) {
+      const gradient = extractGradient(gradientFill);
+      if (gradient) {
+        styles.backgroundGradient = gradient;
         hasStyles = true;
+      }
+    } 
+    // B. Fallback to Solid Fill if no gradient found
+    else {
+      const solidFill = figmaNode.fills.find((f: any) =>
+        f.visible !== false && f.type === 'SOLID' && f.color
+      );
+
+      if (solidFill && solidFill.color) {
+        const color = figmaColorToHex(solidFill.color, solidFill.opacity ?? 1);
+        if (color !== 'transparent') {
+          styles.backgroundColor = color;
+          hasStyles = true;
+        }
       }
     }
   }
 
-  // 2. Extract border from strokes
+  // 2. Extract border from STROKES
   if (Array.isArray(figmaNode.strokes)) {
     const solidStroke = figmaNode.strokes.find((s: any) =>
       s.visible !== false && s.type === 'SOLID' && s.color
-    ) as any;
+    );
 
-    if (solidStroke) {
+    if (solidStroke && solidStroke.color) {
       styles.borderColor = figmaColorToHex(solidStroke.color, solidStroke.opacity ?? 1);
       styles.borderWidth = (figmaNode as any).strokeWeight ?? 1;
       hasStyles = true;
     }
   }
 
-  // 3. Extract corner radius
+  // 3. Extract Corner Radius
   if (typeof (figmaNode as any).cornerRadius === 'number') {
-    styles.borderRadius = (figmaNode as any).cornerRadius;
-    hasStyles = true;
+    if ((figmaNode as any).cornerRadius > 0) {
+      styles.borderRadius = (figmaNode as any).cornerRadius;
+      hasStyles = true;
+    }
   }
 
-  // 4. Extract opacity
+  // 4. Extract Opacity
   if (typeof figmaNode.opacity === 'number' && figmaNode.opacity < 1) {
     styles.opacity = figmaNode.opacity;
     hasStyles = true;
   }
 
-  // 5. Extract text styles (for TEXT nodes)
+  // 5. Extract Text Styles (for TEXT nodes)
   if (figmaNode.type === 'TEXT' || (figmaNode as any).characters) {
     const style = figmaNode.style || (figmaNode as any).style;
     if (style) {
@@ -1274,13 +1469,12 @@ function extractStyles(figmaNode: FigmaNode): UITreeNode['styles'] | undefined {
       }
     }
 
-    // Text color from fills
     if (Array.isArray(figmaNode.fills)) {
       const textFill = figmaNode.fills.find((f: any) =>
         f.visible !== false && f.type === 'SOLID' && f.color
-      ) as any;
+      );
 
-      if (textFill) {
+      if (textFill && textFill.color) {
         styles.textColor = figmaColorToHex(textFill.color, textFill.opacity ?? 1);
         hasStyles = true;
       }
@@ -1290,6 +1484,85 @@ function extractStyles(figmaNode: FigmaNode): UITreeNode['styles'] | undefined {
   return hasStyles ? styles : undefined;
 }
 
+/**
+ * Helper: Parses Figma Gradient definition into a structured object
+ * Compatible with libraries like react-native-linear-gradient
+ */
+function extractGradient(fill: any): any {
+  // 1. Map Gradient Type
+  const typeMap: Record<string, string> = {
+    'GRADIENT_LINEAR': 'linear',
+    'GRADIENT_RADIAL': 'radial',
+    'GRADIENT_ANGULAR': 'angular',
+    'GRADIENT_DIAMOND': 'diamond'
+  };
+
+  const type = typeMap[fill.type] || 'linear';
+
+  // 2. Extract Stops (Colors and Offsets)
+  const stops = Array.isArray(fill.gradientStops)
+    ? fill.gradientStops.map((stop: any) => ({
+        color: figmaColorToHex(stop.color, 1), // Alpha is inside color object usually
+        offset: stop.position
+      }))
+    : [];
+
+  // 3. Extract Handle Positions (Coordinates)
+  // Figma provides 3 handles: [Start, End, Width/Skew]
+  // We generally only need Start (0) and End (1) for Linear Gradients.
+  const handles = fill.gradientHandlePositions || [];
+  
+  // Default coordinates if missing
+  let start = { x: 0.5, y: 0 };
+  let end = { x: 0.5, y: 1 };
+
+  if (handles.length >= 2) {
+    // Handle 0 is the start point
+    start = {
+      x: parseFloat(handles[0].x.toFixed(2)),
+      y: parseFloat(handles[0].y.toFixed(2))
+    };
+    
+    // Handle 1 is the end point
+    end = {
+      x: parseFloat(handles[1].x.toFixed(2)),
+      y: parseFloat(handles[1].y.toFixed(2))
+    };
+  }
+
+  return {
+    type,
+    start,
+    end,
+    stops
+  };
+}
+
+/**
+ * Convert Figma color (0-1 float) to hex or rgba string
+ * (Unchanged from previous version, included for context)
+ */
+function figmaColorToHex(color: { r: number; g: number; b: number; a?: number }, opacity: number = 1): string {
+  if (!color) return 'transparent';
+
+  const to255 = (n: number) => Math.round(n * 255);
+  // Figma colors sometimes have 'a' inside the color object, sometimes explicit opacity is passed
+  const colorAlpha = color.a !== undefined ? color.a : 1;
+  const finalAlpha = colorAlpha * opacity;
+
+  if (finalAlpha === 0) return 'transparent';
+
+  const r = to255(color.r);
+  const g = to255(color.g);
+  const b = to255(color.b);
+
+  if (finalAlpha < 1) {
+    return `rgba(${r}, ${g}, ${b}, ${finalAlpha.toFixed(2)})`;
+  }
+
+  const toHex = (n: number) => n.toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+}
 /**
  * Extract position bounds from Figma node
  * Used for visual position-based sorting

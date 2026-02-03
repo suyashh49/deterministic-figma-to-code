@@ -249,13 +249,47 @@ export const COMPONENT_MAP: Record<string, ComponentMapping> = {
         }),
     },
 
+    // ============================================
+    // Navigation & Headers
+    // ============================================
     'HEADER': {
         component: 'Header',
-        propMapper: (node) => ({
-            title: node.text || node.title,
-            showBackButton: true,
-            onBackPress: '() => {}',
-        }),
+        additionalImports: ['TouchableOpacity'], // Only RN imports here
+        propMapper: (node) => {
+            // Find nodes
+            const leftNode = findChildNode(node, n => n.role === 'Container_SVG');
+            const rightNode = findChildNode(node, n => n.role === 'Button_SVG');
+            const backNode = findChildNode(node, n => n.componentType === 'BACKBUTTON');
+            const titleNode = findChildNode(node, n => n.componentType === 'TEXT');
+
+            // Styles
+            const style: Record<string, any> = {};
+            if (node.styles?.borderColor) {
+                style.borderBottomWidth = 1;
+                style.borderBottomColor = node.styles.borderColor;
+            }
+
+            // --- SIMPLIFIED LOGIC: ALWAYS USE <Menu /> ---
+            // You can replace 'Menu' with 'Icon' later if you create a generic wrapper.
+            
+            const leftActionJsx = leftNode 
+                ? `(<Menu size={24} color="#000" />)` 
+                : undefined;
+
+            const rightActionJsx = rightNode 
+                ? `(<TouchableOpacity onPress={() => {}}><Menu size={24} color="#000" /></TouchableOpacity>)` 
+                : undefined;
+
+            return {
+                title: titleNode?.text || 'Header',
+                backgroundColor: node.styles?.backgroundColor || '#FFFFFF',
+                showBackButton: !!backNode,
+                onBackPress: backNode ? '() => navigation.goBack()' : undefined,
+                leftAction: leftActionJsx,
+                rightAction: rightActionJsx,
+                containerStyle: Object.keys(style).length > 0 ? style : undefined
+            };
+        },
     },
 
     'TOPBAR': {
@@ -341,6 +375,20 @@ function mapCardVariant(variant?: string): 'elevated' | 'outlined' | 'filled' {
     }
 }
 
+/**
+ * Recursively find a child node matching a predicate
+ */
+function findChildNode(root: UITreeNode, predicate: (node: UITreeNode) => boolean): UITreeNode | undefined {
+    if (predicate(root)) return root;
+    
+    if (root.children) {
+        for (const child of root.children) {
+            const found = findChildNode(child, predicate);
+            if (found) return found;
+        }
+    }
+    return undefined;
+}
 
 /**
  * Map generic string size to AvatarSize
