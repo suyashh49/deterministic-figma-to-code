@@ -1,662 +1,169 @@
 {
-  "id": "1:210",
+  "id": "125:75",
   "componentType": "SAFEAREAVIEW",
-  "componentName": "ComponentLibrary",
-  "role": "ComponentLibrary_SAFEAREAVIEW",
+  "componentName": "5.1 - HelpCopy",
+  "role": "5.1 - HelpCopy_SAFEAREAVIEW",
   "bounds": {
-    "x": 453,
+    "x": 1359,
     "y": 0,
-    "width": 413,
-    "height": 1695
+    "width": 413.3739318847656,
+    "height": 1695.024169921875
   },
   "styles": {
     "backgroundColor": "#FFFFFF"
   },
+  "layout": {
+    "direction": "horizontal",
+    "gap": 10,
+    "align": "center"
+  },
   "children": [
     {
-      "id": "7:8",
-      "componentType": "VIEW",
-      "componentName": "Frame3",
-      "role": "Frame3_VIEW",
+      "id": "125:76",
+      "componentType": "SCROLLABLE_VIEW",
+      "componentName": "App",
+      "role": "App_SCROLLABLE_VIEW",
       "bounds": {
-        "x": 547,
-        "y": 47,
-        "width": 242,
-        "height": 187
+        "x": 1359,
+        "y": 0,
+        "width": 413.3739318847656,
+        "height": 1695.024169921875
+      },
+      "styles": {
+        "backgroundColor": "#F9FAFB"
       },
       "layout": {
-        "direction": "vertical",
-        "gap": 21
+        "direction": "vertical"
       },
       "children": [
         {
-          "id": "1:211",
-          "componentType": "BUTTON",
-          "componentName": "Button1",
-          "role": "Button1_BUTTON",
+          "id": "125:77",
+          "componentType": "VIEW",
+          "componentName": "HelpScreen",
+          "role": "HelpScreen_VIEW",
           "bounds": {
-            "x": 547,
-            "y": 47,
-            "width": 242,
-            "height": 31
+            "x": 1359,
+            "y": 0,
+            "width": 413.3739318847656,
+            "height": 1695.024169921875
           },
           "styles": {
-            "backgroundColor": "#0891B2",
-            "borderRadius": 4
-          },
-          "layout": {
-            "direction": "horizontal",
-            "gap": 4,
-            "padding": {
-              "top": 8,
-              "right": 12,
-              "bottom": 8,
-              "left": 12
-            },
-            "align": "center"
-          },
-          "styleHints": {
-            "variant": "regular",
-            "size": "sm"
-          },
-          "props": {},
-          "text": "Regular Button",
-          "action": {
-            "type": "press"
-          }
-        },
-        {
-          "id": "1:213",
-          "componentType": "BUTTON",
-          "componentName": "Button2",
-          "role": "Button2_BUTTON",
-          "bounds": {
-            "x": 547,
-            "y": 99,
-            "width": 242,
-            "height": 31
-          },
-          "styles": {
-            "borderColor": "#D4D4D4",
-            "borderWidth": 1,
-            "borderRadius": 4
-          },
-          "layout": {
-            "direction": "horizontal",
-            "gap": 4,
-            "padding": {
-              "top": 8,
-              "right": 12,
-              "bottom": 8,
-              "left": 12
-            },
-            "align": "center"
-          },
-          "styleHints": {
-            "variant": "outline",
-            "size": "sm"
-          },
-          "props": {},
-          "text": "Outline Button",
-          "action": {
-            "type": "press"
-          }
-        },
-        {
-          "id": "1:215",
-          "componentType": "BUTTON",
-          "componentName": "Button3",
-          "role": "Button3_BUTTON",
-          "bounds": {
-            "x": 547,
-            "y": 151,
-            "width": 242,
-            "height": 31
-          },
-          "styles": {
-            "borderRadius": 4
-          },
-          "layout": {
-            "direction": "horizontal",
-            "gap": 4,
-            "padding": {
-              "top": 8,
-              "right": 12,
-              "bottom": 8,
-              "left": 12
-            },
-            "align": "center"
-          },
-          "styleHints": {
-            "variant": "ghost",
-            "size": "sm"
-          },
-          "props": {},
-          "text": "Ghost Button",
-          "action": {
-            "type": "press"
-          }
-        },
-        {
-          "id": "1:217",
-          "componentType": "BUTTON",
-          "componentName": "Button4",
-          "role": "Button4_BUTTON",
-          "bounds": {
-            "x": 547,
-            "y": 203,
-            "width": 242,
-            "height": 31
-          },
-          "styles": {
-            "backgroundColor": "#0891B2",
-            "borderRadius": 4,
-            "opacity": 0.4000000059604645
-          },
-          "layout": {
-            "direction": "horizontal",
-            "gap": 4,
-            "padding": {
-              "top": 8,
-              "right": 12,
-              "bottom": 8,
-              "left": 12
-            },
-            "align": "center"
-          },
-          "styleHints": {
-            "variant": "regular",
-            "size": "sm"
-          },
-          "props": {
-            "rightIcon": "Icon",
-            "disabled": true
-          },
-          "text": "Disabled Button",
-          "action": {
-            "type": "press"
-          }
-        }
-      ]
-    },
-    {
-      "id": "7:9",
-      "componentType": "VIEW",
-      "componentName": "Frame4",
-      "role": "Frame4_VIEW",
-      "bounds": {
-        "x": 500,
-        "y": 287,
-        "width": 319,
-        "height": 32
-      },
-      "layout": {
-        "direction": "horizontal",
-        "gap": 35,
-        "align": "center"
-      },
-      "children": [
-        {
-          "id": "1:221",
-          "componentType": "CHIP",
-          "componentName": "Selectable",
-          "role": "Selectable_CHIP",
-          "bounds": {
-            "x": 500,
-            "y": 287,
-            "width": 115,
-            "height": 32
-          },
-          "styles": {
-            "backgroundColor": "#E8DEF8",
-            "borderRadius": 8
-          },
-          "layout": {
-            "direction": "horizontal",
-            "align": "center"
-          },
-          "styleHints": {
-            "variant": "flat"
-          },
-          "props": {
-            "icon": "SelectedIcon"
-          },
-          "text": "Selectable chip",
-          "action": {
-            "type": "press"
-          }
-        },
-        {
-          "id": "1:225",
-          "componentType": "CHIP",
-          "componentName": "Normal",
-          "role": "Normal_CHIP",
-          "bounds": {
-            "x": 650,
-            "y": 287,
-            "width": 78,
-            "height": 32
-          },
-          "styles": {
-            "backgroundColor": "#F7F2FA",
-            "borderRadius": 8
-          },
-          "layout": {
-            "direction": "horizontal",
-            "align": "center"
-          },
-          "styleHints": {
-            "variant": "flat"
-          },
-          "props": {
-            "disabled": true
-          },
-          "text": "Normal chip"
-        },
-        {
-          "id": "1:228",
-          "componentType": "CHIP",
-          "componentName": "Disabled",
-          "role": "Disabled_CHIP",
-          "bounds": {
-            "x": 763,
-            "y": 287,
-            "width": 56,
-            "height": 32
-          },
-          "styles": {
-            "backgroundColor": "rgba(73, 69, 79, 0.10)",
-            "borderRadius": 8,
-            "opacity": 0.800000011920929
-          },
-          "layout": {
-            "direction": "horizontal",
-            "align": "center"
-          },
-          "styleHints": {
-            "variant": "flat"
-          },
-          "props": {
-            "disabled": true
-          },
-          "text": "Disabled"
-        }
-      ]
-    },
-    {
-      "id": "7:10",
-      "componentType": "VIEW",
-      "componentName": "Frame5",
-      "role": "Frame5_VIEW",
-      "bounds": {
-        "x": 489,
-        "y": 372,
-        "width": 343,
-        "height": 202
-      },
-      "layout": {
-        "direction": "vertical",
-        "gap": 27
-      },
-      "children": [
-        {
-          "id": "1:231",
-          "componentType": "RADIO",
-          "componentName": "Radio1",
-          "role": "Radio1_RADIO",
-          "bounds": {
-            "x": 489,
-            "y": 372,
-            "width": 78,
-            "height": 27
-          },
-          "layout": {
-            "direction": "horizontal",
-            "gap": 8,
-            "align": "center"
-          },
-          "props": {
-            "selected": false,
-            "label": "Label"
-          }
-        },
-        {
-          "id": "1:235",
-          "componentType": "CHECKBOX",
-          "componentName": "Checkbox1",
-          "role": "Checkbox1_CHECKBOX",
-          "bounds": {
-            "x": 489,
-            "y": 426,
-            "width": 78,
-            "height": 27
-          },
-          "layout": {
-            "direction": "horizontal",
-            "gap": 8,
-            "align": "center"
-          },
-          "props": {
-            "checked": true,
-            "label": "Label"
-          }
-        },
-        {
-          "id": "1:240",
-          "componentType": "CHECKBOX",
-          "componentName": "Checkbox2",
-          "role": "Checkbox2_CHECKBOX",
-          "bounds": {
-            "x": 489,
-            "y": 480,
-            "width": 78,
-            "height": 27
-          },
-          "layout": {
-            "direction": "horizontal",
-            "gap": 8,
-            "align": "center"
-          },
-          "props": {
-            "checked": false,
-            "label": "Label"
-          }
-        },
-        {
-          "id": "1:244",
-          "componentType": "DROPDOWN",
-          "componentName": "Dropdown",
-          "role": "Dropdown_DROPDOWN",
-          "bounds": {
-            "x": 489,
-            "y": 534,
-            "width": 343,
-            "height": 40
-          },
-          "styles": {
-            "borderRadius": 4
-          },
-          "layout": {
-            "direction": "vertical",
-            "gap": 4
-          },
-          "props": {
-            "placeholder": "Select Option"
-          }
-        }
-      ]
-    },
-    {
-      "id": "8:56",
-      "componentType": "VIEW",
-      "componentName": "Frame2",
-      "role": "Frame2_VIEW",
-      "bounds": {
-        "x": 489,
-        "y": 625,
-        "width": 343,
-        "height": 283
-      },
-      "layout": {
-        "direction": "vertical",
-        "gap": 20
-      },
-      "children": [
-        {
-          "id": "8:35",
-          "componentType": "CARD",
-          "componentName": "Outlined",
-          "role": "Outlined_CARD",
-          "bounds": {
-            "x": 489,
-            "y": 625,
-            "width": 343,
-            "height": 81
-          },
-          "styles": {
-            "backgroundColor": "#FFFFFF",
-            "borderColor": "#E5E7EB",
-            "borderWidth": 0.5822169780731201,
-            "borderRadius": 14
+            "backgroundColor": "#F9FAFB"
           },
           "layout": {
             "direction": "vertical",
             "padding": {
-              "top": 16.57501220703125,
-              "right": 16.57497787475586,
-              "bottom": 0.5822169780731201,
-              "left": 16.57498550415039
+              "top": 64.57147979736328
             }
-          },
-          "styleHints": {},
-          "props": {
-            "variant": "outlined",
-            "padding": "md"
           },
           "children": [
             {
-              "id": "8:36",
-              "componentType": "CARD",
+              "id": "125:78",
+              "componentType": "VIEW",
               "componentName": "Container",
-              "role": "Container_CARD",
+              "role": "Container_VIEW",
               "bounds": {
-                "x": 505.5749816894531,
-                "y": 641.5750122070312,
-                "width": 309.85003662109375,
-                "height": 47.996498107910156
-              },
-              "layout": {
-                "direction": "horizontal",
-                "gap": 15.99276351928711,
-                "padding": {
-                  "right": 0.000026702880859375
-                }
-              },
-              "styleHints": {},
-              "props": {
-                "variant": "filled",
-                "padding": "none"
+                "x": 1359,
+                "y": 64.57147979736328,
+                "width": 413.3739318847656,
+                "height": 1844
               },
               "children": [
                 {
-                  "id": "8:37",
+                  "id": "125:207",
                   "componentType": "VIEW",
                   "componentName": "Container",
-                  "role": "Container_TEXT",
+                  "role": "Container_VIEW",
+                  "bounds": {
+                    "x": 1359,
+                    "y": 64.14295959472656,
+                    "width": 413.3739318847656,
+                    "height": 126.55937957763672
+                  },
+                  "styles": {
+                    "backgroundColor": "#FFFFFF",
+                    "borderColor": "#E5E7EB",
+                    "borderWidth": 1
+                  },
+                  "layout": {
+                    "direction": "vertical",
+                    "gap": 7.996376037597656,
+                    "padding": {
+                      "top": 31.99463653564453,
+                      "right": 15.992767333984375,
+                      "bottom": 0.5822169780731201,
+                      "left": 15.992767333984375
+                    }
+                  },
                   "children": [
                     {
-                      "id": "8:39",
+                      "id": "125:208",
                       "componentType": "TEXT",
-                      "componentName": "Outlined Card",
-                      "text": "Outlined Card",
-                      "styles": {
-                        "backgroundColor": "#101828",
-                        "fontSize": 16,
-                        "fontWeight": 700,
-                        "fontFamily": "Inter",
-                        "textColor": "#101828"
-                      }
+                      "componentName": "Text",
+                      "role": "Heading 2",
+                      "text": "Help Center"
                     },
                     {
-                      "id": "8:41",
+                      "id": "125:210",
                       "componentType": "TEXT",
-                      "componentName": "This card has a border.",
-                      "text": "This card has a border.",
-                      "styles": {
-                        "backgroundColor": "#4A5565",
-                        "fontSize": 14,
-                        "fontWeight": 400,
-                        "fontFamily": "Inter",
-                        "textColor": "#4A5565"
-                      }
+                      "componentName": "Text",
+                      "role": "Paragraph",
+                      "text": "How can we help you today?"
                     }
                   ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "8:42",
-          "componentType": "CARD",
-          "componentName": "Elevated",
-          "role": "Elevated_CARD",
-          "bounds": {
-            "x": 489,
-            "y": 726,
-            "width": 343,
-            "height": 81
-          },
-          "styles": {
-            "backgroundColor": "#FFFFFF",
-            "borderColor": "#E5E7EB",
-            "borderWidth": 0.5822169780731201,
-            "borderRadius": 14
-          },
-          "layout": {
-            "direction": "vertical",
-            "padding": {
-              "top": 16.57501220703125,
-              "right": 16.57497787475586,
-              "bottom": 0.5822169780731201,
-              "left": 16.57498550415039
-            }
-          },
-          "styleHints": {},
-          "props": {
-            "variant": "elevated",
-            "padding": "md"
-          },
-          "children": [
-            {
-              "id": "8:43",
-              "componentType": "CARD",
-              "componentName": "Container",
-              "role": "Container_CARD",
-              "bounds": {
-                "x": 505.5749816894531,
-                "y": 742.5750122070312,
-                "width": 309.85003662109375,
-                "height": 47.996498107910156
-              },
-              "layout": {
-                "direction": "horizontal",
-                "gap": 15.99276351928711,
-                "padding": {
-                  "right": 0.000026702880859375
-                }
-              },
-              "styleHints": {},
-              "props": {
-                "variant": "filled",
-                "padding": "none"
-              },
-              "children": [
+                },
                 {
-                  "id": "8:44",
-                  "componentType": "VIEW",
+                  "id": "125:204",
+                  "componentType": "SEARCHABLE_INPUT",
                   "componentName": "Container",
-                  "role": "Container_TEXT",
-                  "children": [
-                    {
-                      "id": "8:46",
-                      "componentType": "TEXT",
-                      "componentName": "Elevated Card",
-                      "text": "Elevated Card",
-                      "styles": {
-                        "backgroundColor": "#101828",
-                        "fontSize": 16,
-                        "fontWeight": 700,
-                        "fontFamily": "Inter",
-                        "textColor": "#101828"
-                      }
-                    },
-                    {
-                      "id": "8:48",
-                      "componentType": "TEXT",
-                      "componentName": "This card has a shadow effect.",
-                      "text": "This card has a shadow effect.",
-                      "styles": {
-                        "backgroundColor": "#4A5565",
-                        "fontSize": 14,
-                        "fontWeight": 400,
-                        "fontFamily": "Inter",
-                        "textColor": "#4A5565"
-                      }
+                  "role": "Container_SEARCHABLE_INPUT",
+                  "bounds": {
+                    "x": 1359,
+                    "y": 190.70233154296875,
+                    "width": 413.3739318847656,
+                    "height": 84.57608795166016
+                  },
+                  "styles": {
+                    "backgroundColor": "#FFFFFF",
+                    "borderColor": "#E5E7EB",
+                    "borderWidth": 1
+                  },
+                  "layout": {
+                    "direction": "vertical",
+                    "padding": {
+                      "top": 23.998245239257812,
+                      "right": 15.992767333984375,
+                      "bottom": 0.5822169780731201,
+                      "left": 15.992767333984375
                     }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "8:72",
-          "componentType": "CARD",
-          "componentName": "Filled",
-          "role": "Filled_CARD",
-          "bounds": {
-            "x": 489,
-            "y": 827,
-            "width": 343,
-            "height": 81
-          },
-          "styles": {
-            "backgroundColor": "#D8F0FF",
-            "borderColor": "#E5E7EB",
-            "borderWidth": 0.5822169780731201,
-            "borderRadius": 14
-          },
-          "layout": {
-            "direction": "vertical",
-            "padding": {
-              "top": 16.57501220703125,
-              "right": 16.57497787475586,
-              "bottom": 0.5822169780731201,
-              "left": 16.57498550415039
-            }
-          },
-          "styleHints": {},
-          "props": {
-            "variant": "outlined",
-            "padding": "md"
-          },
-          "children": [
-            {
-              "id": "8:73",
-              "componentType": "CARD",
-              "componentName": "Container",
-              "role": "Container_CARD",
-              "bounds": {
-                "x": 505.5749816894531,
-                "y": 843.5750122070312,
-                "width": 309.85003662109375,
-                "height": 47.996498107910156
-              },
-              "layout": {
-                "direction": "horizontal",
-                "gap": 15.99276351928711,
-                "padding": {
-                  "right": 0.000026702880859375
-                }
-              },
-              "styleHints": {},
-              "props": {
-                "variant": "filled",
-                "padding": "none"
-              },
-              "children": [
+                  }
+                },
                 {
-                  "id": "8:74",
+                  "id": "125:133",
                   "componentType": "VIEW",
                   "componentName": "Container",
-                  "role": "Container_TEXT",
+                  "role": "Container_VIEW",
+                  "bounds": {
+                    "x": 1359,
+                    "y": 275.57147216796875,
+                    "width": 413,
+                    "height": 541
+                  },
+                  "layout": {
+                    "direction": "vertical",
+                    "gap": 15.992748260498047,
+                    "padding": {
+                      "top": 23.998260498046875,
+                      "right": 15.992767333984375,
+                      "left": 15.992767333984375
+                    }
+                  },
                   "children": [
                     {
-                      "id": "8:76",
+                      "id": "125:135",
                       "componentType": "TEXT",
-                      "componentName": "Filled Card",
-                      "text": "Filled Card",
+                      "componentName": "Common Issues",
+                      "text": "Common Issues",
                       "styles": {
                         "backgroundColor": "#101828",
                         "fontSize": 16,
@@ -666,17 +173,892 @@
                       }
                     },
                     {
-                      "id": "8:78",
+                      "id": "135:144",
+                      "componentType": "VIEW",
+                      "componentName": "Container",
+                      "role": "Container_VIEW",
+                      "bounds": {
+                        "x": 1374.9927978515625,
+                        "y": 339.56072998046875,
+                        "width": 381.01446533203125,
+                        "height": 546.8787841796875
+                      },
+                      "layout": {
+                        "direction": "vertical",
+                        "gap": 12
+                      },
+                      "children": [
+                        {
+                          "id": "135:145",
+                          "componentType": "VIEW",
+                          "componentName": "Button",
+                          "role": "Button_VIEW",
+                          "bounds": {
+                            "x": 1374.9927978515625,
+                            "y": 339.56072998046875,
+                            "width": 381.3883972167969,
+                            "height": 81.14646911621094
+                          },
+                          "styles": {
+                            "backgroundColor": "#FFFFFF",
+                            "borderColor": "#E5E7EB",
+                            "borderWidth": 0.5822169780731201,
+                            "borderRadius": 14
+                          },
+                          "layout": {
+                            "direction": "vertical",
+                            "padding": {
+                              "top": 16.57501220703125,
+                              "right": 16.57497787475586,
+                              "bottom": 0.5822169780731201,
+                              "left": 16.57498550415039
+                            }
+                          },
+                          "children": [
+                            {
+                              "id": "135:146",
+                              "componentType": "LISTITEM",
+                              "componentName": "Container",
+                              "role": "Container_LISTITEM",
+                              "bounds": {
+                                "x": 1391.5677490234375,
+                                "y": 356.1357421875,
+                                "width": 348.2384338378906,
+                                "height": 47.996498107910156
+                              },
+                              "layout": {
+                                "direction": "horizontal",
+                                "gap": 15.99276351928711,
+                                "padding": {
+                                  "right": 0.000026702880859375
+                                }
+                              },
+                              "props": {
+                                "leftElement": {
+                                  "id": "135:147",
+                                  "componentType": "SVG",
+                                  "componentName": "Container",
+                                  "role": "Container_SVG",
+                                  "bounds": {
+                                    "x": 1391.5677490234375,
+                                    "y": 356.1357421875,
+                                    "width": 47.996498107910156,
+                                    "height": 47.996498107910156
+                                  },
+                                  "styles": {
+                                    "borderRadius": 14
+                                  }
+                                }
+                              },
+                              "title": "Billing & Payments",
+                              "subtitle": "Payment methods, invoices, refunds"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "135:156",
+                          "componentType": "VIEW",
+                          "componentName": "Button",
+                          "role": "Button_VIEW",
+                          "bounds": {
+                            "x": 1374.9927978515625,
+                            "y": 432.70721435546875,
+                            "width": 381.3883972167969,
+                            "height": 81.14646911621094
+                          },
+                          "styles": {
+                            "backgroundColor": "#FFFFFF",
+                            "borderColor": "#E5E7EB",
+                            "borderWidth": 0.5822169780731201,
+                            "borderRadius": 14
+                          },
+                          "layout": {
+                            "direction": "vertical",
+                            "padding": {
+                              "top": 16.574981689453125,
+                              "right": 16.57497787475586,
+                              "bottom": 0.5822169780731201,
+                              "left": 16.57498550415039
+                            }
+                          },
+                          "children": [
+                            {
+                              "id": "135:157",
+                              "componentType": "LISTITEM",
+                              "componentName": "Container",
+                              "role": "Container_LISTITEM",
+                              "bounds": {
+                                "x": 1391.5677490234375,
+                                "y": 449.2821960449219,
+                                "width": 348.2384338378906,
+                                "height": 47.996498107910156
+                              },
+                              "layout": {
+                                "direction": "horizontal",
+                                "gap": 15.99276351928711,
+                                "padding": {
+                                  "right": 0.000026702880859375
+                                }
+                              },
+                              "props": {
+                                "leftElement": {
+                                  "id": "135:158",
+                                  "componentType": "SVG",
+                                  "componentName": "Container",
+                                  "role": "Container_SVG",
+                                  "bounds": {
+                                    "x": 1391.5677490234375,
+                                    "y": 449.2821960449219,
+                                    "width": 47.996498107910156,
+                                    "height": 47.996498107910156
+                                  },
+                                  "styles": {
+                                    "borderRadius": 14
+                                  }
+                                }
+                              },
+                              "title": "Account Management",
+                              "subtitle": "Login, password, profile settings"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "135:167",
+                          "componentType": "VIEW",
+                          "componentName": "Button",
+                          "role": "Button_VIEW",
+                          "bounds": {
+                            "x": 1374.9927978515625,
+                            "y": 525.8536376953125,
+                            "width": 381.3883972167969,
+                            "height": 81.14646911621094
+                          },
+                          "styles": {
+                            "backgroundColor": "#FFFFFF",
+                            "borderColor": "#E5E7EB",
+                            "borderWidth": 0.5822169780731201,
+                            "borderRadius": 14
+                          },
+                          "layout": {
+                            "direction": "vertical",
+                            "padding": {
+                              "top": 16.57501220703125,
+                              "right": 16.57497787475586,
+                              "bottom": 0.5822169780731201,
+                              "left": 16.57498550415039
+                            }
+                          },
+                          "children": [
+                            {
+                              "id": "135:168",
+                              "componentType": "LISTITEM",
+                              "componentName": "Container",
+                              "role": "Container_LISTITEM",
+                              "bounds": {
+                                "x": 1391.5677490234375,
+                                "y": 542.4286499023438,
+                                "width": 348.2384338378906,
+                                "height": 47.996498107910156
+                              },
+                              "layout": {
+                                "direction": "horizontal",
+                                "gap": 15.99276351928711,
+                                "padding": {
+                                  "right": 0.000026702880859375
+                                }
+                              },
+                              "props": {
+                                "leftElement": {
+                                  "id": "135:169",
+                                  "componentType": "SVG",
+                                  "componentName": "Container",
+                                  "role": "Container_SVG",
+                                  "bounds": {
+                                    "x": 1391.5677490234375,
+                                    "y": 542.4286499023438,
+                                    "width": 47.996498107910156,
+                                    "height": 47.996498107910156
+                                  },
+                                  "styles": {
+                                    "borderRadius": 14
+                                  }
+                                }
+                              },
+                              "title": "TV Signal Issues",
+                              "subtitle": "No signal, poor quality, troubleshooting"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "135:178",
+                          "componentType": "VIEW",
+                          "componentName": "Button",
+                          "role": "Button_VIEW",
+                          "bounds": {
+                            "x": 1374.9927978515625,
+                            "y": 619.0001220703125,
+                            "width": 381.3883972167969,
+                            "height": 81.14646911621094
+                          },
+                          "styles": {
+                            "backgroundColor": "#FFFFFF",
+                            "borderColor": "#E5E7EB",
+                            "borderWidth": 0.5822169780731201,
+                            "borderRadius": 14
+                          },
+                          "layout": {
+                            "direction": "vertical",
+                            "padding": {
+                              "top": 16.574951171875,
+                              "right": 16.57497787475586,
+                              "bottom": 0.5822169780731201,
+                              "left": 16.57498550415039
+                            }
+                          },
+                          "children": [
+                            {
+                              "id": "135:179",
+                              "componentType": "LISTITEM",
+                              "componentName": "Container",
+                              "role": "Container_LISTITEM",
+                              "bounds": {
+                                "x": 1391.5677490234375,
+                                "y": 635.5750732421875,
+                                "width": 348.2384338378906,
+                                "height": 47.996498107910156
+                              },
+                              "layout": {
+                                "direction": "horizontal",
+                                "gap": 15.99276351928711,
+                                "padding": {
+                                  "right": 0.000026702880859375
+                                }
+                              },
+                              "props": {
+                                "leftElement": {
+                                  "id": "135:180",
+                                  "componentType": "SVG",
+                                  "componentName": "Container",
+                                  "role": "Container_SVG",
+                                  "bounds": {
+                                    "x": 1391.5677490234375,
+                                    "y": 635.5750732421875,
+                                    "width": 47.996498107910156,
+                                    "height": 47.996498107910156
+                                  },
+                                  "styles": {
+                                    "borderRadius": 14
+                                  }
+                                }
+                              },
+                              "title": "Subscription Plans",
+                              "subtitle": "Upgrade, downgrade, cancel subscription"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "135:189",
+                          "componentType": "VIEW",
+                          "componentName": "Button",
+                          "role": "Button_VIEW",
+                          "bounds": {
+                            "x": 1374.9927978515625,
+                            "y": 712.1466064453125,
+                            "width": 381.3883972167969,
+                            "height": 81.14646911621094
+                          },
+                          "styles": {
+                            "backgroundColor": "#FFFFFF",
+                            "borderColor": "#E5E7EB",
+                            "borderWidth": 0.5822169780731201,
+                            "borderRadius": 14
+                          },
+                          "layout": {
+                            "direction": "vertical",
+                            "padding": {
+                              "top": 16.57501220703125,
+                              "right": 16.57497787475586,
+                              "bottom": 0.5822169780731201,
+                              "left": 16.57498550415039
+                            }
+                          },
+                          "children": [
+                            {
+                              "id": "135:190",
+                              "componentType": "LISTITEM",
+                              "componentName": "Container",
+                              "role": "Container_LISTITEM",
+                              "bounds": {
+                                "x": 1391.5677490234375,
+                                "y": 728.7216186523438,
+                                "width": 348.2384338378906,
+                                "height": 47.996498107910156
+                              },
+                              "layout": {
+                                "direction": "horizontal",
+                                "gap": 15.99276351928711,
+                                "padding": {
+                                  "right": 0.000026702880859375
+                                }
+                              },
+                              "props": {
+                                "leftElement": {
+                                  "id": "135:191",
+                                  "componentType": "SVG",
+                                  "componentName": "Container",
+                                  "role": "Container_SVG",
+                                  "bounds": {
+                                    "x": 1391.5677490234375,
+                                    "y": 728.7216186523438,
+                                    "width": 47.996498107910156,
+                                    "height": 47.996498107910156
+                                  },
+                                  "styles": {
+                                    "borderRadius": 14
+                                  }
+                                }
+                              },
+                              "title": "Connectivity",
+                              "subtitle": "Internet issues, streaming problems"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "135:202",
+                          "componentType": "VIEW",
+                          "componentName": "Button",
+                          "role": "Button_VIEW",
+                          "bounds": {
+                            "x": 1374.9927978515625,
+                            "y": 805.2930908203125,
+                            "width": 381.3883972167969,
+                            "height": 81.14646911621094
+                          },
+                          "styles": {
+                            "backgroundColor": "#FFFFFF",
+                            "borderColor": "#E5E7EB",
+                            "borderWidth": 0.5822169780731201,
+                            "borderRadius": 14
+                          },
+                          "layout": {
+                            "direction": "vertical",
+                            "padding": {
+                              "top": 16.57501220703125,
+                              "right": 16.57497787475586,
+                              "bottom": 0.5822169780731201,
+                              "left": 16.57498550415039
+                            }
+                          },
+                          "children": [
+                            {
+                              "id": "135:203",
+                              "componentType": "LISTITEM",
+                              "componentName": "Container",
+                              "role": "Container_LISTITEM",
+                              "bounds": {
+                                "x": 1391.5677490234375,
+                                "y": 821.8681030273438,
+                                "width": 348.2384338378906,
+                                "height": 47.996498107910156
+                              },
+                              "layout": {
+                                "direction": "horizontal",
+                                "gap": 15.99276351928711,
+                                "padding": {
+                                  "right": 0.000026702880859375
+                                }
+                              },
+                              "props": {
+                                "leftElement": {
+                                  "id": "135:204",
+                                  "componentType": "SVG",
+                                  "componentName": "Container",
+                                  "role": "Container_SVG",
+                                  "bounds": {
+                                    "x": 1391.5677490234375,
+                                    "y": 821.8681030273438,
+                                    "width": 47.996498107910156,
+                                    "height": 47.996498107910156
+                                  },
+                                  "styles": {
+                                    "borderRadius": 14
+                                  }
+                                }
+                              },
+                              "title": "Diagnostics",
+                              "subtitle": "Diagnose your device, check connection"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "125:103",
+                  "componentType": "VIEW",
+                  "componentName": "Container",
+                  "role": "Container_VIEW",
+                  "bounds": {
+                    "x": 1359,
+                    "y": 956.994873046875,
+                    "width": 413.3739318847656,
+                    "height": 333.08258056640625
+                  },
+                  "layout": {
+                    "direction": "vertical",
+                    "gap": 15.992778778076172,
+                    "padding": {
+                      "right": 15.992767333984375,
+                      "left": 15.992767333984375
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "125:105",
                       "componentType": "TEXT",
-                      "componentName": "This card has a filled background.",
-                      "text": "This card has a filled background.",
+                      "componentName": "Contact Support",
+                      "text": "Contact Support",
                       "styles": {
-                        "backgroundColor": "#4A5565",
-                        "fontSize": 14,
+                        "backgroundColor": "#101828",
+                        "fontSize": 16,
                         "fontWeight": 400,
                         "fontFamily": "Inter",
-                        "textColor": "#4A5565"
+                        "textColor": "#101828"
                       }
+                    },
+                    {
+                      "id": "125:106",
+                      "componentType": "VIEW",
+                      "componentName": "Container",
+                      "role": "Container_VIEW",
+                      "bounds": {
+                        "x": 1374.9927978515625,
+                        "y": 996.9859008789062,
+                        "width": 381.3883972167969,
+                        "height": 147.9740447998047
+                      },
+                      "styles": {
+                        "borderRadius": 14
+                      },
+                      "layout": {
+                        "direction": "vertical",
+                        "gap": 15.99276351928711,
+                        "padding": {
+                          "top": 23.99822998046875,
+                          "right": 23.998241424560547,
+                          "left": 23.998249053955078
+                        }
+                      },
+                      "children": [
+                        {
+                          "id": "125:107",
+                          "componentType": "VIEW",
+                          "componentName": "Container",
+                          "role": "Container_VIEW",
+                          "bounds": {
+                            "x": 1398.9910888671875,
+                            "y": 1020.984130859375,
+                            "width": 333.39190673828125,
+                            "height": 47.98740005493164
+                          },
+                          "layout": {
+                            "direction": "horizontal",
+                            "gap": 11.999122619628906,
+                            "align": "center"
+                          },
+                          "children": [
+                            {
+                              "id": "125:108",
+                              "componentType": "SVG",
+                              "componentName": "Icon",
+                              "role": "Icon_SVG",
+                              "bounds": {
+                                "x": 1398.9910888671875,
+                                "y": 1028.98046875,
+                                "width": 31.994632720947266,
+                                "height": 31.994632720947266
+                              }
+                            },
+                            {
+                              "id": "125:110",
+                              "componentType": "VIEW",
+                              "componentName": "Container",
+                              "role": "Container_VIEW",
+                              "bounds": {
+                                "x": 1442.98486328125,
+                                "y": 1020.984130859375,
+                                "width": 218.64060974121094,
+                                "height": 47.98740005493164
+                              },
+                              "layout": {
+                                "direction": "vertical",
+                                "gap": 3.993633270263672
+                              },
+                              "children": [
+                                {
+                                  "id": "125:112",
+                                  "componentType": "TEXT",
+                                  "componentName": "Chat with us",
+                                  "text": "Chat with us",
+                                  "styles": {
+                                    "backgroundColor": "#FFFFFF",
+                                    "fontSize": 16,
+                                    "fontWeight": 400,
+                                    "fontFamily": "Inter",
+                                    "textColor": "#FFFFFF"
+                                  }
+                                },
+                                {
+                                  "id": "125:114",
+                                  "componentType": "TEXT",
+                                  "componentName": "Average response time: 2 minutes",
+                                  "text": "Average response time: 2 minutes",
+                                  "styles": {
+                                    "backgroundColor": "rgba(255, 255, 255, 0.90)",
+                                    "fontSize": 14,
+                                    "fontWeight": 400,
+                                    "fontFamily": "Inter",
+                                    "textColor": "rgba(255, 255, 255, 0.90)"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "125:115",
+                          "componentType": "BUTTON",
+                          "componentName": "Button",
+                          "role": "Button_BUTTON",
+                          "bounds": {
+                            "x": 1398.9910888671875,
+                            "y": 1084.96435546875,
+                            "width": 333.39190673828125,
+                            "height": 35.997371673583984
+                          },
+                          "styles": {
+                            "backgroundColor": "#FFFFFF",
+                            "borderRadius": 8
+                          },
+                          "styleHints": {
+                            "variant": "regular",
+                            "size": "md"
+                          },
+                          "props": {},
+                          "text": "Start Chat",
+                          "action": {
+                            "type": "press"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "id": "125:117",
+                      "componentType": "VIEW",
+                      "componentName": "Container",
+                      "role": "Container_VIEW",
+                      "bounds": {
+                        "x": 1374.9927978515625,
+                        "y": 1160.9527587890625,
+                        "width": 381.3883972167969,
+                        "height": 105.12651824951172
+                      },
+                      "children": [
+                        {
+                          "id": "125:126",
+                          "componentType": "CARD",
+                          "componentName": "Button",
+                          "role": "Button_TOUCHABLE_CARD",
+                          "action": {
+                            "type": "press"
+                          },
+                          "styleHints": {
+                            "variant": "regular"
+                          },
+                          "title": "24/7 Support",
+                          "subtitle": "Call Us"
+                        },
+                        {
+                          "id": "125:118",
+                          "componentType": "CARD",
+                          "componentName": "Button",
+                          "role": "Button_TOUCHABLE_CARD",
+                          "action": {
+                            "type": "press"
+                          },
+                          "styleHints": {
+                            "variant": "regular"
+                          },
+                          "title": "Revert in 24h",
+                          "subtitle": "Email"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "125:79",
+                  "componentType": "VIEW",
+                  "componentName": "Container",
+                  "role": "Container_VIEW",
+                  "bounds": {
+                    "x": 1359,
+                    "y": 1306,
+                    "width": 413,
+                    "height": 523
+                  },
+                  "styles": {
+                    "backgroundColor": "#FFFFFF"
+                  },
+                  "layout": {
+                    "direction": "vertical",
+                    "gap": 15.992717742919922,
+                    "padding": {
+                      "top": 23.998291015625,
+                      "right": 15.992767333984375,
+                      "left": 15.992767333984375
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "125:81",
+                      "componentType": "TEXT",
+                      "componentName": "Self-Help Resources",
+                      "text": "Self-Help Resources",
+                      "styles": {
+                        "backgroundColor": "#101828",
+                        "fontSize": 16,
+                        "fontWeight": 400,
+                        "fontFamily": "Inter",
+                        "textColor": "#101828"
+                      }
+                    },
+                    {
+                      "id": "125:82",
+                      "componentType": "VIEW",
+                      "componentName": "Container",
+                      "role": "Container_VIEW",
+                      "bounds": {
+                        "x": 1374.9927978515625,
+                        "y": 1369.9892578125,
+                        "width": 381.01446533203125,
+                        "height": 360.5468444824219
+                      },
+                      "layout": {
+                        "direction": "vertical",
+                        "gap": 11.999107360839844
+                      },
+                      "children": [
+                        {
+                          "id": "125:83",
+                          "componentType": "CARD",
+                          "componentName": "Button",
+                          "role": "Button_CARD",
+                          "bounds": {
+                            "x": 1374.9927978515625,
+                            "y": 1369.9892578125,
+                            "width": 381.01446533203125,
+                            "height": 81.13736724853516
+                          },
+                          "styles": {
+                            "borderColor": "#E5E7EB",
+                            "borderWidth": 0.5822169780731201,
+                            "borderRadius": 14
+                          },
+                          "styleHints": {},
+                          "props": {
+                            "variant": "outlined",
+                            "padding": "none"
+                          },
+                          "children": [
+                            {
+                              "id": "174:157",
+                              "componentType": "VIEW",
+                              "componentName": "Container",
+                              "role": "Container_TEXT",
+                              "children": [
+                                {
+                                  "id": "174:159",
+                                  "componentType": "TEXT",
+                                  "componentName": "Outlined Card",
+                                  "text": "Outlined Card",
+                                  "styles": {
+                                    "backgroundColor": "#101828",
+                                    "fontSize": 16,
+                                    "fontWeight": 700,
+                                    "fontFamily": "Inter",
+                                    "textColor": "#101828"
+                                  }
+                                },
+                                {
+                                  "id": "174:161",
+                                  "componentType": "TEXT",
+                                  "componentName": "This card has a border.",
+                                  "text": "This card has a border.",
+                                  "styles": {
+                                    "backgroundColor": "#4A5565",
+                                    "fontSize": 14,
+                                    "fontWeight": 400,
+                                    "fontFamily": "Inter",
+                                    "textColor": "#4A5565"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "125:88",
+                          "componentType": "CARD",
+                          "componentName": "Button",
+                          "role": "Button_CARD",
+                          "bounds": {
+                            "x": 1374.9927978515625,
+                            "y": 1463.125732421875,
+                            "width": 381.01446533203125,
+                            "height": 81.13736724853516
+                          },
+                          "styles": {
+                            "borderColor": "#E5E7EB",
+                            "borderWidth": 0.5822169780731201,
+                            "borderRadius": 14
+                          },
+                          "styleHints": {},
+                          "props": {
+                            "variant": "outlined",
+                            "padding": "none"
+                          },
+                          "children": [
+                            {
+                              "id": "125:92",
+                              "componentType": "TEXT",
+                              "componentName": "Troubleshooting TV signal issues",
+                              "text": "Troubleshooting TV signal issues",
+                              "styles": {
+                                "backgroundColor": "#101828",
+                                "fontSize": 16,
+                                "fontWeight": 400,
+                                "fontFamily": "Inter",
+                                "textColor": "#101828"
+                              }
+                            },
+                            {
+                              "id": "125:90",
+                              "componentType": "TEXT",
+                              "componentName": "Common fixes for signal problems",
+                              "text": "Common fixes for signal problems",
+                              "styles": {
+                                "backgroundColor": "#4A5565",
+                                "fontSize": 14,
+                                "fontWeight": 400,
+                                "fontFamily": "Inter",
+                                "textColor": "#4A5565"
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "id": "125:93",
+                          "componentType": "CARD",
+                          "componentName": "Button",
+                          "role": "Button_CARD",
+                          "bounds": {
+                            "x": 1374.9927978515625,
+                            "y": 1556.26220703125,
+                            "width": 381.01446533203125,
+                            "height": 81.13736724853516
+                          },
+                          "styles": {
+                            "borderColor": "#E5E7EB",
+                            "borderWidth": 0.5822169780731201,
+                            "borderRadius": 14
+                          },
+                          "styleHints": {},
+                          "props": {
+                            "variant": "outlined",
+                            "padding": "none"
+                          },
+                          "children": [
+                            {
+                              "id": "125:97",
+                              "componentType": "TEXT",
+                              "componentName": "Payment methods and billing",
+                              "text": "Payment methods and billing",
+                              "styles": {
+                                "backgroundColor": "#101828",
+                                "fontSize": 16,
+                                "fontWeight": 400,
+                                "fontFamily": "Inter",
+                                "textColor": "#101828"
+                              }
+                            },
+                            {
+                              "id": "125:95",
+                              "componentType": "TEXT",
+                              "componentName": "Everything about payments and invoices",
+                              "text": "Everything about payments and invoices",
+                              "styles": {
+                                "backgroundColor": "#4A5565",
+                                "fontSize": 14,
+                                "fontWeight": 400,
+                                "fontFamily": "Inter",
+                                "textColor": "#4A5565"
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "id": "125:98",
+                          "componentType": "CARD",
+                          "componentName": "Button",
+                          "role": "Button_CARD",
+                          "bounds": {
+                            "x": 1374.9927978515625,
+                            "y": 1649.398681640625,
+                            "width": 381.01446533203125,
+                            "height": 81.13736724853516
+                          },
+                          "styles": {
+                            "borderColor": "#E5E7EB",
+                            "borderWidth": 0.5822169780731201,
+                            "borderRadius": 14
+                          },
+                          "styleHints": {},
+                          "props": {
+                            "variant": "outlined",
+                            "padding": "none"
+                          },
+                          "children": [
+                            {
+                              "id": "125:102",
+                              "componentType": "TEXT",
+                              "componentName": "Understanding rewards points",
+                              "text": "Understanding rewards points",
+                              "styles": {
+                                "backgroundColor": "#101828",
+                                "fontSize": 16,
+                                "fontWeight": 400,
+                                "fontFamily": "Inter",
+                                "textColor": "#101828"
+                              }
+                            },
+                            {
+                              "id": "125:100",
+                              "componentType": "TEXT",
+                              "componentName": "How to earn and redeem points",
+                              "text": "How to earn and redeem points",
+                              "styles": {
+                                "backgroundColor": "#4A5565",
+                                "fontSize": 14,
+                                "fontWeight": 400,
+                                "fontFamily": "Inter",
+                                "textColor": "#4A5565"
+                              }
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }
@@ -687,90 +1069,87 @@
       ]
     },
     {
-      "id": "88:119",
-      "componentType": "VIEW",
-      "componentName": "Frame6",
-      "role": "Frame6_VIEW",
+      "id": "125:212",
+      "componentType": "HEADER",
+      "componentName": "TopBar",
+      "role": "TopBar_HEADER",
       "bounds": {
-        "x": 568,
-        "y": 967,
-        "width": 190,
-        "height": 40
+        "x": 1359,
+        "y": 0,
+        "width": 413.3739318847656,
+        "height": 64.57147979736328
+      },
+      "styles": {
+        "backgroundColor": "#FFFFFF",
+        "borderColor": "#E5E7EB",
+        "borderWidth": 1
       },
       "layout": {
-        "direction": "horizontal",
-        "gap": 47,
-        "align": "center"
+        "direction": "vertical",
+        "padding": {
+          "top": 11.999124526977539,
+          "right": 15.992767333984375,
+          "bottom": 0.5822169780731201,
+          "left": 15.992767333984375
+        }
       },
       "children": [
         {
-          "id": "88:120",
-          "componentType": "AVATAR",
-          "componentName": "Avatar",
-          "role": "Avatar_AVATAR",
+          "id": "125:213",
+          "componentType": "VIEW",
+          "componentName": "Container",
+          "role": "Container_VIEW",
           "bounds": {
-            "x": 568,
-            "y": 975,
-            "width": 24,
-            "height": 24
+            "x": 1374.9927978515625,
+            "y": 11.999124526977539,
+            "width": 381.3883972167969,
+            "height": 39.99101638793945
           },
-          "styles": {
-            "backgroundColor": "#E3F2FD",
-            "borderRadius": 800
-          },
-          "props": {
-            "size": "xs",
-            "name": "AB"
-          },
-          "action": {
-            "type": "press"
-          }
-        },
-        {
-          "id": "88:122",
-          "componentType": "AVATAR",
-          "componentName": "Avatar",
-          "role": "Avatar_AVATAR",
-          "bounds": {
-            "x": 639,
-            "y": 971,
-            "width": 32,
-            "height": 32
-          },
-          "styles": {
-            "backgroundColor": "#E3F2FD",
-            "borderRadius": 800
-          },
-          "props": {
-            "size": "sm",
-            "name": "CD"
-          },
-          "action": {
-            "type": "press"
-          }
-        },
-        {
-          "id": "88:124",
-          "componentType": "AVATAR",
-          "componentName": "Avatar",
-          "role": "Avatar_AVATAR",
-          "bounds": {
-            "x": 718,
-            "y": 967,
-            "width": 40,
-            "height": 40
-          },
-          "styles": {
-            "backgroundColor": "#E3F2FD",
-            "borderRadius": 800
-          },
-          "props": {
-            "size": "md",
-            "name": "EF"
-          },
-          "action": {
-            "type": "press"
-          }
+          "children": [
+            {
+              "id": "125:215",
+              "componentType": "SVG",
+              "componentName": "Container",
+              "role": "Container_SVG",
+              "bounds": {
+                "x": 1374.9927978515625,
+                "y": 11.999124526977539,
+                "width": 39.99101638793945,
+                "height": 39.99101638793945
+              },
+              "styles": {
+                "borderRadius": 19536000
+              }
+            },
+            {
+              "id": "125:219",
+              "componentType": "TEXT",
+              "componentName": "Cignal One",
+              "text": "Cignal One",
+              "styles": {
+                "backgroundColor": "#101828",
+                "fontSize": 24,
+                "fontWeight": 500,
+                "fontFamily": "Inter",
+                "textColor": "#101828"
+              }
+            },
+            {
+              "id": "125:221",
+              "componentType": "SVG",
+              "componentName": "Button",
+              "role": "Button_SVG",
+              "bounds": {
+                "x": 1720.3929443359375,
+                "y": 14.000494003295898,
+                "width": 35.988277435302734,
+                "height": 35.988277435302734
+              },
+              "styles": {
+                "borderRadius": 19536000
+              }
+            }
+          ]
         }
       ]
     }

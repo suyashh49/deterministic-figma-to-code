@@ -3,6 +3,9 @@ dist/
 *.log
 .env
 .DS_Store
+input.json
+output.tsx
+output.json
 
 
 

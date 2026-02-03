@@ -72,29 +72,29 @@ function generateComponent(
         const textContent = props._textContent || node.text || '';
         delete props._textContent;
 
-        const propsStr = generatePropsString(props);
+        const propsStr = generatePropsString(props, depth, usedComponents, rnImports);
         return `${indent}<Text${propsStr}>${escapeText(textContent)}</Text>`;
     }
 
     // Generate props string
-    const propsStr = generatePropsString(props);
+    const propsStr = generatePropsString(props, depth, usedComponents, rnImports);
 
     // Handle components with children
     if (mapping.hasChildren && node.children && node.children.length > 0) {
         const gap = node.layout?.gap || 0;
         const isHorizontal = node.layout?.direction === 'horizontal';
-        
+
         // Generate children code with conditional spacers
         const childrenCode = node.children.map((child, index) => {
             // 1. Generate the child's code
             const childCode = generateComponent(child, depth + 1, usedComponents, rnImports);
-            
+
             // 2. Determine if we need a spacer after this child
             const isLast = index === node.children!.length - 1;
-            
+
             // STRICT CHECK: Only add spacer if THIS child is a 'VIEW'
             // (You can add 'CARD' || 'SCROLLABLE_VIEW' here if those count as Views to you)
-            const shouldAddSpacer = !isLast &&  child.componentType === 'VIEW';
+            const shouldAddSpacer = !isLast && child.componentType === 'VIEW';
 
             if (shouldAddSpacer) {
                 usedComponents.add('Spacer');
@@ -115,12 +115,23 @@ function generateComponent(
 /**
  * Generate props as JSX string
  */
-function generatePropsString(props: Record<string, any>): string {
+function generatePropsString(
+    props: Record<string, any>,
+    depth: number,
+    usedComponents: Set<string>,
+    rnImports: Set<string>
+): string {
     const propEntries = Object.entries(props).filter(([_, v]) => v !== undefined && v !== null);
 
     if (propEntries.length === 0) return '';
 
     const propsArr = propEntries.map(([key, value]) => {
+        // Handle React Component props (UITreeNode)
+        if (typeof value === 'object' && value !== null && 'componentType' in value) {
+            const componentCode = generateComponent(value, depth + 1, usedComponents, rnImports);
+            return `${key}={${componentCode.trimStart()}}`; // trimStart to remove initial indent for inline feel or let it be
+        }
+
         if (typeof value === 'string') {
             // Check if it's a function placeholder
             if (value.startsWith('()') || value.startsWith('(value)') || value.startsWith('(text)')) {

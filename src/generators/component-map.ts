@@ -125,6 +125,23 @@ export const COMPONENT_MAP: Record<string, ComponentMapping> = {
     },
 
     // ============================================
+    // Lists
+    // ============================================
+    'LISTITEM': {
+        component: 'ListItem',
+        hasChildren: false,
+        propMapper: (node) => ({
+            title: node.text || node.title || 'List Item',
+            subtitle: node.subtitle,
+            leftElement: node.props?.leftElement,
+            rightElement: node.props?.rightElement,
+            onPress: node.action?.type === 'press' ? '() => {}' : undefined,
+            disabled: node.props?.disabled,
+            itemSeparator: node.props?.itemSeparator,
+        }),
+    },
+
+    // ============================================
     // Media & Avatars
     // ============================================
     'AVATAR': {
@@ -143,8 +160,8 @@ export const COMPONENT_MAP: Record<string, ComponentMapping> = {
             onPress: node.action?.type === 'press' ? '() => {}' : undefined,
 
             // 5. Visual Overrides: Map background color from 'styles' to containerStyle
-            containerStyle: node.styles?.backgroundColor 
-                ? { backgroundColor: node.styles.backgroundColor } 
+            containerStyle: node.styles?.backgroundColor
+                ? { backgroundColor: node.styles.backgroundColor }
                 : undefined,
         }),
     },
@@ -253,7 +270,7 @@ export const COMPONENT_MAP: Record<string, ComponentMapping> = {
         hasChildren: true,
         additionalImports: ['SafeAreaView'],
         propMapper: (node) => ({
-            style: { flex: 1, ...buildLayoutStyle(node),backgroundColor: '#FFFFFF', paddingHorizontal: 32 },
+            style: { flex: 1, ...buildLayoutStyle(node), backgroundColor: '#FFFFFF', paddingHorizontal: 32 },
         }),
     },
 

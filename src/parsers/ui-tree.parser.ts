@@ -250,7 +250,10 @@ export function parseFigmaNode(figmaNode: FigmaNode): UITreeNode {
 
     case 'CARD':
       return parseCardNode(figmaNode, node);
-    
+
+    case 'LISTITEM':
+      return parseListItemNode(figmaNode, node);
+
     case 'AVATAR':
       return parseAvatarNode(figmaNode, node);
 
@@ -548,7 +551,7 @@ function parseAvatarNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   if (layout) {
     node.layout = layout;
   }
-  
+
   node.props = node.props || {};
 
   // 2. Extract Size (Standardized Scale)
@@ -573,9 +576,9 @@ function parseAvatarNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
   }
 
   // 3. Extract Content
-  
+
   // A. Check for Image Fill (Source)
-  const hasImageFill = Array.isArray(figmaNode.fills) && 
+  const hasImageFill = Array.isArray(figmaNode.fills) &&
     figmaNode.fills.some((f: any) => f.visible !== false && f.type === 'IMAGE');
 
   if (hasImageFill) {
@@ -1366,6 +1369,94 @@ function collectAllTextNodes(figmaNode: FigmaNode, results: UITreeNode[]): void 
       collectAllTextNodes(child as FigmaNode, results);
     }
   }
+}
+
+/**
+ * Step 3I: Parse LISTITEM node
+ * Rules:
+ * - Extract title from "Title" text or first text node
+ * - Extract subtitle from "Subtitle" text node
+ * - Extract properties like itemSeparator, disabled from props
+ * NOTE: ListItem does not have children in the output, properties are mapped
+ */
+function parseListItemNode(figmaNode: FigmaNode, node: UITreeNode): UITreeNode {
+  // Extract layout
+  const layout = extractLayout(figmaNode);
+  if (layout) {
+    node.layout = layout;
+  }
+
+  node.props = node.props || {};
+
+  // Try to find title and subtitle from text children
+  if (figmaNode.children) {
+    // Collect all text nodes with their potential roles and parent info
+    const textNodes: Array<{ text: string; role: string, parentName: string, node: FigmaNode }> = [];
+
+    // Helper to recursively find text nodes
+    const findTexts = (parent: FigmaNode) => {
+      if (parent.children) {
+        for (const child of parent.children) {
+          if (child.type === 'TEXT') {
+            textNodes.push({
+              text: child.characters || '',
+              role: child.name || '',
+              parentName: parent.name || '',
+              node: child
+            });
+          } else {
+            findTexts(child);
+          }
+        }
+      }
+    };
+
+    findTexts(figmaNode);
+
+    // 1. Title
+    // Look for text node explicitly named "Title" or parent named "Title" or variant, or take the first text node
+    const titleNode = textNodes.find(t =>
+      t.role.toLowerCase().includes('title') ||
+      t.parentName.toLowerCase().includes('title')
+    ) || textNodes[0];
+
+    if (titleNode && titleNode.text) {
+      node.title = titleNode.text;
+    }
+
+    // 2. Subtitle
+    // Look for text node explicitly named "Subtitle" or parent named "Subtitle" or similar
+    const subtitleNode = textNodes.find(t =>
+      t !== titleNode && ( // Ensure we don't pick the same node for both
+        t.role.toLowerCase().includes('subtitle') ||
+        t.role.toLowerCase().includes('description') ||
+        t.parentName.toLowerCase().includes('subtitle') ||
+        t.parentName.toLowerCase().includes('description')
+      )
+    );
+
+    if (subtitleNode && subtitleNode.text) {
+      node.subtitle = subtitleNode.text;
+    }
+
+    // 3. Left Element (Icon/SVG)
+    // Look for node with SVG/ICON in name or type VECTOR
+    const iconNode = figmaNode.children.find(child =>
+      ((child.name && (child.name.includes('_SVG') || child.name.includes('_ICON') || child.name.includes('Icon'))) || child.type === 'VECTOR') &&
+      (!child.name || (!child.name.includes('Title') && !child.name.includes('Subtitle'))) &&
+      child.type !== 'TEXT' // Ensure we don't pick text nodes
+    );
+
+    if (iconNode) {
+      // Recursively parse the icon node
+      // We can iterate the child's siblings or just take the node itself
+      // parseFigmaNode is in the same scope
+      node.props.leftElement = parseFigmaNode(iconNode);
+    }
+  }
+
+  // ListItem is semantically collapsed - its structure is handled by the component map
+  return node;
 }
 
 export { figmaColorToHex, extractStyles, extractBounds, sortChildrenByPosition };
