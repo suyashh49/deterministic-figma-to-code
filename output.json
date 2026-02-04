@@ -173,27 +173,17 @@
                       }
                     },
                     {
-<<<<<<< Updated upstream
                       "id": "135:144",
                       "componentType": "VIEW",
                       "componentName": "Container",
                       "role": "Container_VIEW",
                       "bounds": {
                         "x": 1374.9927978515625,
-=======
-                      "id": "125:136",
-                      "componentType": "VIEW",
-                      "componentName": "Frame 1",
-                      "role": "Frame 1_VIEW",
-                      "bounds": {
-                        "x": 1374.99267578125,
->>>>>>> Stashed changes
                         "y": 339.56072998046875,
                         "width": 381.01446533203125,
                         "height": 546.8787841796875
                       },
                       "layout": {
-<<<<<<< Updated upstream
                         "direction": "vertical",
                         "gap": 12
                       },
@@ -256,53 +246,36 @@
                                     "height": 47.996498107910156
                                   },
                                   "styles": {
+                                    "backgroundGradient": {
+                                      "type": "linear",
+                                      "start": {
+                                        "x": 0,
+                                        "y": 0
+                                      },
+                                      "end": {
+                                        "x": 1,
+                                        "y": 1
+                                      },
+                                      "stops": [
+                                        {
+                                          "color": "#2B7FFF",
+                                          "offset": 0
+                                        },
+                                        {
+                                          "color": "#155DFC",
+                                          "offset": 1
+                                        }
+                                      ]
+                                    },
                                     "borderRadius": 14
+                                  },
+                                  "props": {
+                                    "name": "Container"
                                   }
-=======
-                        "direction": "horizontal",
-                        "gap": 12,
-                        "align": "center"
-                      },
-                      "children": [
-                        {
-                          "id": "125:137",
-                          "componentType": "VIEW",
-                          "componentName": "Container",
-                          "role": "Container_VIEW",
-                          "bounds": {
-                            "x": 1374.99267578125,
-                            "y": 339.56072998046875,
-                            "width": 381.01446533203125,
-                            "height": 546.8787841796875
-                          },
-                          "layout": {
-                            "direction": "vertical",
-                            "gap": 12
-                          },
-                          "children": [
-                            {
-                              "id": "125:138",
-                              "componentType": "CARD",
-                              "componentName": "Button",
-                              "role": "Button_TOUCHABLE_CARD",
-                              "action": {
-                                "type": "press"
-                              },
-                              "styleHints": {
-                                "variant": "regular"
-                              },
-                              "layout": {
-                                "padding": {
-                                  "top": 16.57501220703125,
-                                  "right": 16.57497787475586,
-                                  "bottom": 0.5822169780731201,
-                                  "left": 16.57498550415039
->>>>>>> Stashed changes
                                 }
                               },
                               "title": "Billing & Payments",
                               "subtitle": "Payment methods, invoices, refunds"
-<<<<<<< Updated upstream
                             }
                           ]
                         },
@@ -364,33 +337,36 @@
                                     "height": 47.996498107910156
                                   },
                                   "styles": {
+                                    "backgroundGradient": {
+                                      "type": "linear",
+                                      "start": {
+                                        "x": 0,
+                                        "y": 0
+                                      },
+                                      "end": {
+                                        "x": 1,
+                                        "y": 1
+                                      },
+                                      "stops": [
+                                        {
+                                          "color": "#AD46FF",
+                                          "offset": 0
+                                        },
+                                        {
+                                          "color": "#9810FA",
+                                          "offset": 1
+                                        }
+                                      ]
+                                    },
                                     "borderRadius": 14
+                                  },
+                                  "props": {
+                                    "name": "Container"
                                   }
-=======
-                            },
-                            {
-                              "id": "125:149",
-                              "componentType": "CARD",
-                              "componentName": "Button",
-                              "role": "Button_TOUCHABLE_CARD",
-                              "action": {
-                                "type": "press"
-                              },
-                              "styleHints": {
-                                "variant": "regular"
-                              },
-                              "layout": {
-                                "padding": {
-                                  "top": 16.574981689453125,
-                                  "right": 16.57497787475586,
-                                  "bottom": 0.5822169780731201,
-                                  "left": 16.57498550415039
->>>>>>> Stashed changes
                                 }
                               },
                               "title": "Account Management",
                               "subtitle": "Login, password, profile settings"
-<<<<<<< Updated upstream
                             }
                           ]
                         },
@@ -452,33 +428,36 @@
                                     "height": 47.996498107910156
                                   },
                                   "styles": {
+                                    "backgroundGradient": {
+                                      "type": "linear",
+                                      "start": {
+                                        "x": 0,
+                                        "y": 0
+                                      },
+                                      "end": {
+                                        "x": 1,
+                                        "y": 1
+                                      },
+                                      "stops": [
+                                        {
+                                          "color": "#F6339A",
+                                          "offset": 0
+                                        },
+                                        {
+                                          "color": "#E60076",
+                                          "offset": 1
+                                        }
+                                      ]
+                                    },
                                     "borderRadius": 14
+                                  },
+                                  "props": {
+                                    "name": "Container"
                                   }
-=======
-                            },
-                            {
-                              "id": "125:160",
-                              "componentType": "CARD",
-                              "componentName": "Button",
-                              "role": "Button_TOUCHABLE_CARD",
-                              "action": {
-                                "type": "press"
-                              },
-                              "styleHints": {
-                                "variant": "regular"
-                              },
-                              "layout": {
-                                "padding": {
-                                  "top": 16.57501220703125,
-                                  "right": 16.57497787475586,
-                                  "bottom": 0.5822169780731201,
-                                  "left": 16.57498550415039
->>>>>>> Stashed changes
                                 }
                               },
                               "title": "TV Signal Issues",
                               "subtitle": "No signal, poor quality, troubleshooting"
-<<<<<<< Updated upstream
                             }
                           ]
                         },
@@ -540,33 +519,36 @@
                                     "height": 47.996498107910156
                                   },
                                   "styles": {
+                                    "backgroundGradient": {
+                                      "type": "linear",
+                                      "start": {
+                                        "x": 0,
+                                        "y": 0
+                                      },
+                                      "end": {
+                                        "x": 1,
+                                        "y": 1
+                                      },
+                                      "stops": [
+                                        {
+                                          "color": "#00C950",
+                                          "offset": 0
+                                        },
+                                        {
+                                          "color": "#00A63E",
+                                          "offset": 1
+                                        }
+                                      ]
+                                    },
                                     "borderRadius": 14
+                                  },
+                                  "props": {
+                                    "name": "Container"
                                   }
-=======
-                            },
-                            {
-                              "id": "125:171",
-                              "componentType": "CARD",
-                              "componentName": "Button",
-                              "role": "Button_TOUCHABLE_CARD",
-                              "action": {
-                                "type": "press"
-                              },
-                              "styleHints": {
-                                "variant": "regular"
-                              },
-                              "layout": {
-                                "padding": {
-                                  "top": 16.574951171875,
-                                  "right": 16.57497787475586,
-                                  "bottom": 0.5822169780731201,
-                                  "left": 16.57498550415039
->>>>>>> Stashed changes
                                 }
                               },
                               "title": "Subscription Plans",
                               "subtitle": "Upgrade, downgrade, cancel subscription"
-<<<<<<< Updated upstream
                             }
                           ]
                         },
@@ -628,33 +610,36 @@
                                     "height": 47.996498107910156
                                   },
                                   "styles": {
+                                    "backgroundGradient": {
+                                      "type": "linear",
+                                      "start": {
+                                        "x": 0,
+                                        "y": 0
+                                      },
+                                      "end": {
+                                        "x": 1,
+                                        "y": 1
+                                      },
+                                      "stops": [
+                                        {
+                                          "color": "#615FFF",
+                                          "offset": 0
+                                        },
+                                        {
+                                          "color": "#4F39F6",
+                                          "offset": 1
+                                        }
+                                      ]
+                                    },
                                     "borderRadius": 14
+                                  },
+                                  "props": {
+                                    "name": "Container"
                                   }
-=======
-                            },
-                            {
-                              "id": "125:182",
-                              "componentType": "CARD",
-                              "componentName": "Button",
-                              "role": "Button_TOUCHABLE_CARD",
-                              "action": {
-                                "type": "press"
-                              },
-                              "styleHints": {
-                                "variant": "regular"
-                              },
-                              "layout": {
-                                "padding": {
-                                  "top": 16.57501220703125,
-                                  "right": 16.57497787475586,
-                                  "bottom": 0.5822169780731201,
-                                  "left": 16.57498550415039
->>>>>>> Stashed changes
                                 }
                               },
                               "title": "Connectivity",
                               "subtitle": "Internet issues, streaming problems"
-<<<<<<< Updated upstream
                             }
                           ]
                         },
@@ -716,36 +701,36 @@
                                     "height": 47.996498107910156
                                   },
                                   "styles": {
+                                    "backgroundGradient": {
+                                      "type": "linear",
+                                      "start": {
+                                        "x": 0,
+                                        "y": 0
+                                      },
+                                      "end": {
+                                        "x": 1,
+                                        "y": 1
+                                      },
+                                      "stops": [
+                                        {
+                                          "color": "#615FFF",
+                                          "offset": 0
+                                        },
+                                        {
+                                          "color": "#4F39F6",
+                                          "offset": 1
+                                        }
+                                      ]
+                                    },
                                     "borderRadius": 14
+                                  },
+                                  "props": {
+                                    "name": "Container"
                                   }
                                 }
                               },
                               "title": "Diagnostics",
                               "subtitle": "Diagnose your device, check connection"
-=======
-                            },
-                            {
-                              "id": "125:195",
-                              "componentType": "CARD",
-                              "componentName": "Button",
-                              "role": "Button_TOUCHABLE_CARD",
-                              "action": {
-                                "type": "press"
-                              },
-                              "styleHints": {
-                                "variant": "regular"
-                              },
-                              "layout": {
-                                "padding": {
-                                  "top": 16.57501220703125,
-                                  "right": 16.57497787475586,
-                                  "bottom": 0.5822169780731201,
-                                  "left": 16.57498550415039
-                                }
-                              },
-                              "title": "Diagnostics",
-                              "subtitle": "Diagnostics"
->>>>>>> Stashed changes
                             }
                           ]
                         }
@@ -798,8 +783,6 @@
                         "height": 147.9740447998047
                       },
                       "styles": {
-<<<<<<< Updated upstream
-=======
                         "backgroundGradient": {
                           "type": "linear",
                           "start": {
@@ -821,7 +804,6 @@
                             }
                           ]
                         },
->>>>>>> Stashed changes
                         "borderRadius": 14
                       },
                       "layout": {
@@ -830,6 +812,7 @@
                         "padding": {
                           "top": 23.99822998046875,
                           "right": 23.998241424560547,
+                          "bottom": 24,
                           "left": 23.998249053955078
                         }
                       },
@@ -861,12 +844,9 @@
                                 "y": 1028.98046875,
                                 "width": 31.994632720947266,
                                 "height": 31.994632720947266
-<<<<<<< Updated upstream
-=======
                               },
                               "props": {
                                 "name": "Icon"
->>>>>>> Stashed changes
                               }
                             },
                             {
@@ -1043,7 +1023,6 @@
                           "id": "125:83",
                           "componentType": "CARD",
                           "componentName": "Button",
-<<<<<<< Updated upstream
                           "role": "Button_CARD",
                           "bounds": {
                             "x": 1374.9927978515625,
@@ -1097,23 +1076,11 @@
                               ]
                             }
                           ]
-=======
-                          "role": "Button_TOUCHABLE_CARD",
-                          "action": {
-                            "type": "press"
-                          },
-                          "styleHints": {
-                            "variant": "outline"
-                          },
-                          "title": "Step-by-step guide to upgrading or downgrading",
-                          "subtitle": "How to change my subscription plan?"
->>>>>>> Stashed changes
                         },
                         {
                           "id": "125:88",
                           "componentType": "CARD",
                           "componentName": "Button",
-<<<<<<< Updated upstream
                           "role": "Button_CARD",
                           "bounds": {
                             "x": 1374.9927978515625,
@@ -1159,23 +1126,11 @@
                               }
                             }
                           ]
-=======
-                          "role": "Button_TOUCHABLE_CARD",
-                          "action": {
-                            "type": "press"
-                          },
-                          "styleHints": {
-                            "variant": "outline"
-                          },
-                          "title": "Common fixes for signal problems",
-                          "subtitle": "Troubleshooting TV signal issues"
->>>>>>> Stashed changes
                         },
                         {
                           "id": "125:93",
                           "componentType": "CARD",
                           "componentName": "Button",
-<<<<<<< Updated upstream
                           "role": "Button_CARD",
                           "bounds": {
                             "x": 1374.9927978515625,
@@ -1221,23 +1176,11 @@
                               }
                             }
                           ]
-=======
-                          "role": "Button_TOUCHABLE_CARD",
-                          "action": {
-                            "type": "press"
-                          },
-                          "styleHints": {
-                            "variant": "outline"
-                          },
-                          "title": "Everything about payments and invoices",
-                          "subtitle": "Payment methods and billing"
->>>>>>> Stashed changes
                         },
                         {
                           "id": "125:98",
                           "componentType": "CARD",
                           "componentName": "Button",
-<<<<<<< Updated upstream
                           "role": "Button_CARD",
                           "bounds": {
                             "x": 1374.9927978515625,
@@ -1283,17 +1226,6 @@
                               }
                             }
                           ]
-=======
-                          "role": "Button_TOUCHABLE_CARD",
-                          "action": {
-                            "type": "press"
-                          },
-                          "styleHints": {
-                            "variant": "outline"
-                          },
-                          "title": "How to earn and redeem points",
-                          "subtitle": "Understanding rewards points"
->>>>>>> Stashed changes
                         }
                       ]
                     }
@@ -1346,11 +1278,7 @@
             {
               "id": "125:215",
               "componentType": "SVG",
-<<<<<<< Updated upstream
-              "componentName": "Container",
-=======
               "componentName": "C1",
->>>>>>> Stashed changes
               "role": "Container_SVG",
               "bounds": {
                 "x": 1374.9927978515625,
@@ -1359,9 +1287,6 @@
                 "height": 39.99101638793945
               },
               "styles": {
-<<<<<<< Updated upstream
-                "borderRadius": 19536000
-=======
                 "backgroundGradient": {
                   "type": "linear",
                   "start": {
@@ -1387,7 +1312,6 @@
               },
               "props": {
                 "name": "C1"
->>>>>>> Stashed changes
               }
             },
             {
@@ -1416,12 +1340,9 @@
               },
               "styles": {
                 "borderRadius": 19536000
-<<<<<<< Updated upstream
-=======
               },
               "props": {
                 "name": "Button"
->>>>>>> Stashed changes
               }
             }
           ]

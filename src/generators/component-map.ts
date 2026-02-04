@@ -11,7 +11,7 @@ import { UITreeNode } from '../types/ui-tree';
  */
 export interface ComponentMapping {
     /** Component name to import from component library */
-    component: string;
+    component: string | ((node: UITreeNode) => string);
 
     /** Function to transform UITreeNode props to component props */
     propMapper: (node: UITreeNode) => Record<string, any>;
@@ -230,12 +230,42 @@ export const COMPONENT_MAP: Record<string, ComponentMapping> = {
     // Layout Containers
     // ============================================
     'VIEW': {
-        component: 'View',
+        // 1. Check for 'backgroundGradient' in styles
+        component: (node) => {
+            if (node.styles?.backgroundGradient?.type === 'linear') {
+                return 'LinearGradient';
+            }
+            return 'View';
+        },
+        
         hasChildren: true,
-        additionalImports: ['View'],
-        propMapper: (node) => ({
-            style: buildLayoutStyle(node),
-        }),
+        additionalImports: ['View'], 
+        
+        propMapper: (node) => {
+            const style = buildLayoutStyle(node) || {};
+            
+            // 2. Handle Gradient Logic
+            const bgGradient = node.styles?.backgroundGradient;
+            
+            if (bgGradient && bgGradient.type === 'linear') {
+                // Transform your "stops" array [{color, offset}] -> Expo format
+                const colors = bgGradient.stops.map((s: any) => s.color);
+                const locations = bgGradient.stops.map((s: any) => s.offset);
+
+                return {
+                    colors: colors,
+                    locations: locations, // Expo supports this to map offsets
+                    start: bgGradient.start, // { x: 0, y: 0 }
+                    end: bgGradient.end,     // { x: 1, y: 1 }
+                    style: style // Apply layout/padding/radius to the Gradient itself
+                };
+            }
+
+            // 3. Standard View
+            return {
+                style: Object.keys(style).length > 0 ? style : undefined,
+            };
+        },
     },
 
     'SCROLLABLE_VIEW': {
@@ -407,69 +437,65 @@ function mapAvatarSize(size?: string): 'xs' | 'sm' | 'md' | 'lg' | 'xl' {
 
 /**
  * Build style object from layout properties
+ * Updated to ensure borderRadius from your JSON is included
  */
 function buildLayoutStyle(node: UITreeNode): Record<string, any> | undefined {
     const style: Record<string, any> = {};
 
-    // Layout direction
-    if (node.layout?.direction === 'horizontal') {
-        style.flexDirection = 'row';
-    }
+    // 1. Layout Properties (Padding, Flex, Gap)
+    if (node.layout) {
+        if (node.layout.direction === 'horizontal') style.flexDirection = 'row';
+        if (node.layout.gap) style.gap = node.layout.gap;
+        
+        // Alignment
+        if (node.layout.align) {
+            const alignMap: Record<string, string> = {
+                'start': 'flex-start', 'center': 'center', 'end': 'flex-end',
+            };
+            style.alignItems = alignMap[node.layout.align] || 'flex-start';
+        }
 
-    // Gap
-    if (node.layout?.gap) {
-        style.gap = node.layout.gap;
-    }
-
-    // Padding
-    if (node.layout?.padding) {
-        if (typeof node.layout.padding === 'number') {
-            style.padding = node.layout.padding;
-        } else {
-            if (node.layout.padding.top) style.paddingTop = node.layout.padding.top;
-            if (node.layout.padding.right) style.paddingRight = node.layout.padding.right;
-            if (node.layout.padding.bottom) style.paddingBottom = node.layout.padding.bottom;
-            if (node.layout.padding.left) style.paddingLeft = node.layout.padding.left;
+        // Padding
+        if (node.layout.padding) {
+            const p = node.layout.padding;
+            if (typeof p === 'number') {
+                style.padding = p;
+            } else {
+                if (p.top) style.paddingTop = p.top;
+                if (p.right) style.paddingRight = p.right;
+                if (p.bottom) style.paddingBottom = p.bottom;
+                if (p.left) style.paddingLeft = p.left;
+            }
         }
     }
 
-    // Alignment
-    if (node.layout?.align) {
-        const alignMap: Record<string, string> = {
-            'start': 'flex-start',
-            'center': 'center',
-            'end': 'flex-end',
-            'stretch': 'stretch',
-        };
-        style.alignItems = alignMap[node.layout.align] || 'flex-start';
-    }
+    // 2. Visual Properties
+    if (node.styles) {
+        // Only apply solid background color if NO gradient exists
+        // (If gradient exists, the LinearGradient component handles the background)
+        if (node.styles.backgroundColor && !node.styles.backgroundGradient) {
+            style.backgroundColor = node.styles.backgroundColor;
+        }
 
-    // Background color
-    if (node.styles?.backgroundColor) {
-        style.backgroundColor = node.styles.backgroundColor;
-    }
-
-    // Border
-    if (node.styles?.borderColor) {
-        style.borderColor = node.styles.borderColor;
-        style.borderWidth = node.styles.borderWidth || 1;
-    }
-
-    // Border radius
-    if (node.styles?.borderRadius) {
-        style.borderRadius = node.styles.borderRadius;
+        if (node.styles.borderRadius) {
+            style.borderRadius = node.styles.borderRadius;
+        }
+        
+        // Border
+        if (node.styles.borderColor) {
+            style.borderColor = node.styles.borderColor;
+            style.borderWidth = node.styles.borderWidth || 1;
+        }
     }
 
     return Object.keys(style).length > 0 ? style : undefined;
 }
-
 /**
  * Get mapping for a component type
  */
 export function getComponentMapping(componentType: string): ComponentMapping | undefined {
     return COMPONENT_MAP[componentType];
 }
-
 /**
  * Check if a component type is supported
  */
