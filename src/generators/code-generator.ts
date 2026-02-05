@@ -38,7 +38,7 @@ function generateComponent(
 
     if (!mapping) {
         rnImports.add('View');
-        return `${indent}<View />`; 
+        return `${indent}<View />`;
     }
 
     // =========================================================
@@ -60,7 +60,7 @@ function generateComponent(
             usedComponents.add(componentName);
         }
     }
-    
+
     // Add specific dependencies (e.g., TouchableOpacity, etc.)
     mapping.additionalImports?.forEach(imp => {
         if (imp !== 'LinearGradient') rnImports.add(imp);
@@ -84,11 +84,18 @@ function generateComponent(
         const gap = node.layout?.gap || 0;
         const isHorizontal = node.layout?.direction === 'horizontal';
 
-        const childrenCode = node.children.map((child, index) => {
+        // 1. Sort children: HEADER always comes first
+        const sortedChildren = [...node.children].sort((a, b) => {
+            if (a.componentType === 'HEADER') return -1;
+            if (b.componentType === 'HEADER') return 1;
+            return 0;
+        });
+
+        const childrenCode = sortedChildren.map((child, index) => {
             const childCode = generateComponent(child, depth + 1, usedComponents, rnImports);
-            
+
             // Spacer Logic
-            const isLast = index === node.children!.length - 1;
+            const isLast = index === sortedChildren.length - 1;
             const shouldAddSpacer = !isLast && child.componentType === 'VIEW';
 
             if (shouldAddSpacer) {
@@ -120,11 +127,11 @@ function generatePropsString(
     if (propEntries.length === 0) return '';
 
     const propsArr = propEntries.map(([key, value]) => {
-        
+
         // Handle Nested Components (UITreeNode)
         if (typeof value === 'object' && value !== null && 'componentType' in value) {
             const componentCode = generateComponent(value, depth + 1, usedComponents, rnImports);
-            return `${key}={${componentCode.trimStart()}}`; 
+            return `${key}={${componentCode.trimStart()}}`;
         }
 
         if (typeof value === 'string') {
@@ -132,19 +139,19 @@ function generatePropsString(
             if (value.startsWith('()') || value.startsWith('(val') || value.startsWith('(text')) {
                 return `${key}={${value}}`;
             }
-            
+
             // Injected JSX
             if (value.startsWith('(<')) {
-                 return `${key}={${value}}`;
+                return `${key}={${value}}`;
             }
 
             return `${key}="${value}"`;
         }
-        
+
         if (typeof value === 'boolean') {
             return value ? key : `${key}={false}`;
         }
-        
+
         return `${key}={${JSON.stringify(value)}}`;
     });
 
@@ -172,7 +179,7 @@ function generateImports(usedComponents: Set<string>, rnImports: Set<string>, fu
     if (usedComponents.size > 0) {
         imports.push(`import { ${Array.from(usedComponents).sort().join(', ')} } from '../components';`);
     }
-    
+
     // 4. Icons
     if (fullSourceCode.includes('<Menu')) {
         imports.push("import { Menu } from 'lucide-react-native';");
